@@ -3,18 +3,18 @@ implicit none
 !
 ! Integer variables
 !
-integer::delta_t,f_id,ierror,iostat,nc,nd_start,no_cycles,no_src
+integer::delta_t,f_id,ierror,iostat,nc,ncc,nd_start,no_cycles,no_src
 integer::narray,nf,nfile,n_head,n,nn,no_years,no_seg,nt,no_tribs
 integer::no_dt,no_days,nobs_start,nobs_end
 integer::start_day,start_mon,start_yr,end_day,end_mon,end_yr,start_hour,end_hour
-integer::Julian,start_jul,end_jul
+integer::Julian,start_jul,end_jul,RBM_seg
 integer,dimension(1000)         :: file_id,net_ndx
-integer,allocatable,dimension(:):: RBM_seg,seg_no,seg_seq,seg_net
+integer,allocatable,dimension(:):: seg_no,seg_seq,seg_net
 integer,allocatable,dimension(:):: dummy
 integer,allocatable,dimension(:):: trib_ndx_out
 !
 ! Real variables
-real::press=1013.
+real::press=1013.,mks_fctr=3.2808*3.2808*3.2808
 real,allocatable,dimension(:)::depth,out_flow,in_flow,lat_flow
 real,allocatable,dimension(:)::trib_flow,trib_temp
 real,allocatable,dimension(:,:)::forcing
@@ -23,8 +23,8 @@ real,allocatable,dimension(:,:)::forcing
 !  
 character (len=1)  :: colon=':'
 character (len=12) :: Basin
-character (len=19) :: start_date,end_date 
-character (len=19) :: time_stamp0,time_stamp
+character (len=14) :: time_stamp1
+character (len=19) :: start_date,end_date,time_stamp2 
 character (len=4)  :: path,Date
 character (len=6)  :: fluff
 character (len=8)  :: sequence
@@ -67,9 +67,41 @@ integer numarg
 !write(*,*) 'trib.Inflow.Only  - Tributary inflow'
 !write(*,*) 'trib.Temp.Only    - Tributary temperature'
 !
+open(15,file='Conn.Source',status='old')
+!
+! Read the headers of the .Source file
+!
+read(15,*) no_tribs
+write(*,*) '# of tribs - ',no_tribs
+!
 open(27,file='trib.Inflow.Only',status='old')
 open(28,file='trib.Temp.Only',status='old')
 !
+read(27,*) Date,(file_id(n),n=1,no_tribs+1)
+read(28,*) Date,(file_id(n),n=1,no_tribs)
+!
+! Hardwire the time stamp
+!
+start_mon=1
+start_day=1
+start_yr=2005
+start_hour=0
+end_mon=1
+end_day=31
+end_yr=2007
+end_hour=21
+start_jul=Julian(start_yr,start_mon,start_day)
+end_jul=Julian(end_yr,end_mon,end_day)
+no_days=end_jul - start_jul
+!
+delta_t=3
+!
+! Determine number of time steps per day
+!
+no_dt=24/delta_t
+!
+write(*,*) 'delta_t ',no_dt,delta_t
+!!
 ! Forcings for Main Stem
 !
 ! Inflow and stream temperature from the tributaries
@@ -85,19 +117,14 @@ allocate (dummy(narray))
 allocate (seg_no(narray))
 allocate (seg_net(narray))
 allocate (seg_seq(narray))
-allocate (RBM_seg(narray))
 allocate (in_flow(narray))
 allocate (out_flow(narray))
 !allocate (lat_flow(narray))
 !allocate (depth(narray))
 allocate (forcing(5,narray))
 !
-!
-!
-!
-delta_t=no_dt
-!
 ! Determine number of time steps per day
+!
 write(*,*) 'delta_t ',no_dt,delta_t
 no_dt=24/delta_t
 !
@@ -139,10 +166,6 @@ no_cycles=nobs_start+nobs_end+no_dt*(no_days-1)
 write(*,*) 'no_cycles ',no_cycles
 !
 !
-! Read the headers of the .Source file
-!
-!
-  read(15,*) no_tribs
 !
 ! Allocate arrays
 !
@@ -155,6 +178,7 @@ write(*,*) 'no_cycles ',no_cycles
 !   Upper_Conn     1   248  1 301 1 392
   do n=1,no_tribs+1
     read(15,*) Basin,nn,RBM_seg,no_src,net_ndx(n),nt,f_id
+    write(*,*) Basin,nn,RBM_seg,no_src,net_ndx(n),nt,f_id
     file_id(f_id)=nt-1
   end do
 !
@@ -168,12 +192,22 @@ write(*,*) 'no_cycles ',no_cycles
 ! Cycle through reading and writing tributary advection
 !
 do nc=1,no_cycles
+ncc=nc
 !
-!  read(27,*) date,(trib_flow(nn),nn=1,no_tribs+1)
-!  read(28,*) date,(trib_temp(nn),nn=1,no_tribs+1)
+  read(27,*,end=200) time_stamp2,(trib_flow(nn),nn=1,no_tribs+1)
+  read(28,*,end=200) time_stamp1,(trib_temp(nn),nn=1,no_tribs)
 !
 ! Write the tributary file
+  do nn=1,no_tribs
+    trib_flow(nn+1)=mks_fctr*trib_flow(nn+1)
+  end do
 !
-!write(35,*) 
+!
+  write(35,'(a14,150(f8.1,f6.1))') time_stamp1                         &
+             ,(trib_flow(trib_ndx_out(nn)+1)                           &
+             ,trib_temp(trib_ndx_out(nn)),nn=1,no_tribs)
 end do
+!
+200 continue
+write(*,*) 'Ending at - ',ncc,' cycles' 
 end Program Create_File
