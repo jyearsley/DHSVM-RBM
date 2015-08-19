@@ -61,6 +61,7 @@ c
      &         ,start_year,start_month,start_day,start_hour
      &         ,end_year,end_month,end_day,end_hour
 c
+      integer total_tribs
       real*4 mu
       real*8 time
         
