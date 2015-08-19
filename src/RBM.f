@@ -48,12 +48,20 @@ c
 c
 c     Identify and open necessary files
 c
+c     open the Source index file  
+      open(unit=10,file=TRIM(Prefix)//'.Source',status='unknown')
+c
+c
 c     open the output file 
       open(unit=20,file=TRIM(Prefix)//'.temp',status='unknown')
 c
 c     Open file with weather and inflow data
       write(*,*) 'Forcing file -  ', TRIM(Prefix)//'.forcing'
       open(unit=30,file=TRIM(Prefix)//'.forcing',STATUS='old')
+c
+c     Open file with tributary temperature and  inflow data
+      write(*,*) 'Tributary file -  ', TRIM(Prefix)//'.tribs'
+      open(unit=35,file=TRIM(Prefix)//'.tribs',STATUS='old')
 C
 c     open Mohseni file 
       open(40,file=TRIM(Prefix)//'.Mohseni',STATUS='old')    
@@ -91,6 +99,7 @@ C
       character*11 end_time,start_time
       character*5 Dummy_B
       character*10 Dummy_A
+      character*12 Basin
       integer head_name,trib_cell,first_cell
       dimension ndmo(12)
       logical Test
@@ -101,7 +110,7 @@ C
 c
 c     Read the starting and ending times and the number of
 c     periods per day of weather data from the forcing file
-c
+c 
       read(30,*) start_time,end_time,nwpd,nd_start
       write(*,*) start_time,'  ',end_time,nwpd,nd_start
 c 
@@ -117,10 +126,19 @@ c
      &             ,end_year,end_month,end_day
 c
 c     Establish the Julian day for which simulations begin
-c
+c 
       jul_start=julian(start_year,start_month,start_day)
-c
+c 
       read(90,*) no_rch
+c
+c Read some tributary information
+c 
+      read(10,*) total_tribs
+      do nt=1,total_tribs
+         read(10,*) Basin,ncell,RBM_cell,no_tribs(ncell)
+         trib(ncell,no_tribs(ncell))=nt
+      end do
+C
       write(*,*) "Number of stream reaches - ",no_rch
       read(40,*) Test,a_smooth
       b_smooth=1.- a_smooth
@@ -157,11 +175,7 @@ c
 c     If this is reach that is tributary to cell TRIB_CELL, give it the
 c     pointer TRIB(TRIB_CELL) the index of this reach for further use.
 c     Also keep track of the total number of tributaries for this cell
-c
-      if (trib_cell.gt.0) then
-         no_tribs(trib_cell)=no_tribs(trib_cell)+1
-         trib(trib_cell,no_tribs(trib_cell))=nreach
-      end if
+c 
 c
 c     Reading Reach Element information
 c
@@ -228,6 +242,7 @@ c
       RETURN
   900 END
       SUBROUTINE SYSTMM
+      character*14 time_stamp
       real*4 xa(4),ta(4),T_head(1000),T_smth(1000)
      *      ,dt_part(1000),x_part(1000)
       real*8 day_fract,hr_fract,sim_incr,year,prnt_time
@@ -242,7 +257,8 @@ c
      &         ,0,31,60,91,121,152,182,213,244,274,305,335/
 c
 c
-      hour_inc=1./nwpd
+      xwpd=nwpd
+      hour_incr=1./xwpd
       do nr=1,1000
          T_head(nr)=mu(nr)
          T_smth(nr)=mu(nr)
@@ -316,14 +332,14 @@ c
              ipd=ndd
              day=nd
              period=ndd
-             time=year+(day-1.+hour_inc*period)/xd_year
+             time=year+(day-1.+hour_incr*period)/xd_year
 c
 c     Read advected energy and meteorology data      
              l_seg = 0
              do nr=1,nreach
 c
 c     Hardwire annual average temperature for headwaters 
-c
+c 
                do nc=1,no_cells(nr)
                  l_seg=l_seg+1
                  read(30,*,end=900) l1
@@ -348,13 +364,14 @@ c    Depth estimated with Leopold coefficients
 c 
                  depth(l_seg)=D_a(l_seg)*(qavg**D_b(l_seg))
                  depth(l_seg)=amax1(D_min(l_seg),depth(l_seg))
-c
+c 
                  lat_flow(l_seg)=qout(l_seg)-qin(l_seg)
                end do
 c
-c  Set the value of the tributary flow due to the reach, NR
-c
-               q_trib(nr)=qout(l_seg)
+c  Read the tributary temperatures and inflows
+c 
+               read(35,*) time_stamp
+     &                  ,(Q_trib(nt),T_trib(nt),nt=1,total_tribs)
 	     end do
 c
 c     Main stem inflows and outflows for each reach first
@@ -583,14 +600,13 @@ c
 c   Write file 20 with all temperature output 11/19/2008
 c
                      nsmod=mod(ns,2)
-                     time=year+(day-1.+hour_inc*period)/xd_year
+                     time=year+(day-1.+hour_incr*period)/xd_year
                      if(nsmod.eq.0) then
                        rmile_plot=x_dist(nr,ns)/5280.
                        write(20,'(f11.5,i5,1x,i4,1x,2i5,1x,5f7.2,f9.2)') 
      &                       time,nyear,nd,ncell,ns,t0
      &                      ,T_head(nr),dbt(ncell)
      &                      ,depth(ncell),u(ncell),qin(ncell)
-
                      end if
 c
 c     End of computational element loop

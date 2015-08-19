@@ -7,6 +7,7 @@ C
      & ,nyear1,nyear2
      & ,n1,n2,no_rch,nwpd,nd,nd_start
      & ,start_year,start_month,start_day,start_hour
+     & ,total_tribs
      & ,end_year,end_month,end_day,end_hour
 
 C_flow
