@@ -231,16 +231,49 @@ c
       real*4 xa(4),ta(4),T_head(1000),T_smth(1000)
      *      ,dt_part(1000),x_part(1000)
       real*8 day_fract,hr_fract,sim_incr,year,prnt_time
-      integer no_dt(1000),nstrt_elm(1000)
+      integer hour,hours_per_dt,nleap,ndelta_0
+      integer no_dt(5000),nstrt_elm(5000)
      .     ,ndltp(4),nterp(4),nptest(4),ndmo(12,2)
-      logical DONE
+c 
+      integer jday(12,2)
+c
+      logical DONE,pp_T
 
       INCLUDE 'RBM.fi'
       data ndltp/-2,-1,-2,-2/,nterp/4,3,2,3/
       data lat/47.6/,pi/3.14159/,rfac/304.8/
-      data ndmo/0,31,59,90,120,151,181,212,243,273,304,334
-     &         ,0,31,60,91,121,152,182,213,244,274,305,335/
+      data ndmo /0,31,59,90,120,151,181,212,243,273,304,334
+     &          ,0,31,60,91,121,152,182,213,244,274,305,335/      
 c
+c
+      data jday/31,59,90,120,151,181,212,243,273,304,334,365
+     &         ,31,60,91,121,152,182,213,244,274,305,335,366/
+      character*2 cal_day,cal_month
+      character*1 zero
+      character ddate(2,366)*7
+      zero = '0'
+c
+c  Build the calendar for later output
+c
+      do nleap = 1,2
+        nldays = 365
+        ndd   = 0
+        nmm   = 1
+        if (nleap .eq. 2) nldays = 366
+        do nld = 1, nldays
+          ndd = ndd + 1
+          write(cal_day,'(i02)') ndd
+          if (ndd .lt. 10) cal_day(1:1) = zero
+          write(cal_month,'(i02)') nmm
+          if (nmm .lt. 10) cal_month(1:1) = zero
+          ddate(nleap,nld) = ':'//cal_month//':'//cal_day//':'
+          write(*,'(a6)')ddate(nleap,nld)
+          if (nld .eq. jday(nmm,nleap)) then
+            ndd = 0
+            nmm = nmm + 1
+          end if
+        end do
+      end do
 c
       hour_inc=1./nwpd
       do nr=1,1000
@@ -279,6 +312,7 @@ c
 c
 c     Year loop starts
       write(*,*) start_year,start_day,start_hour,time,day_fract,hr_fract
+      end_year = 2010
       do nyear=start_year,end_year
          write(*,*) ' Simulation Year - ',nyear
          nd_year=365
@@ -584,14 +618,14 @@ c   Write file 20 with all temperature output 11/19/2008
 c
                      nsmod=mod(ns,2)
                      time=year+(day-1.+hour_inc*period)/xd_year
-                     if(nsmod.eq.0) then
+c                     if(nsmod.eq.0) then
                        rmile_plot=x_dist(nr,ns)/5280.
-                       write(20,'(f11.5,i5,1x,i4,1x,2i5,1x,5f7.2,f9.2)') 
-     &                       time,nyear,nd,ncell,ns,t0
-     &                      ,T_head(nr),dbt(ncell)
-     &                      ,depth(ncell),u(ncell),qin(ncell)
-
-                     end if
+                       write(20,
+     &                '(i4,a7,i2.2,i5,1x,2i5,1x,5f7.2,f9.2,f9.1)') 
+     &                       nyear,ddate(lp_year,nd),hour,nd,nncell,ns,t0
+     &                      ,T_head(nr),T_eql
+     &                      ,depth(ncell),u(nncell),qin(nncell),qsw_out
+c                     end if
 c
 c     End of computational element loop
 c
