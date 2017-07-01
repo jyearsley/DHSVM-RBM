@@ -322,12 +322,14 @@ c        Day loop starts
 c
 c
          DO ND=nd1,nd2
+         write(*,*) 'ND1/ND2 ',nd1,nd2
 c
 c     Start the numbers of days-to-date counter
            ndays=ndays+1
 c
 c     Daily period loop starts
            DO ndd=nd_start,nwpd 
+           write(*,*) 'Daily ',ndd,nwpd
 c
 c     Begin reach computations
 c      
@@ -345,10 +347,13 @@ c     Hardwire annual average temperature for headwaters
 c
                do nc=1,no_cells(nr)
                  l_seg=l_seg+1
-                 read(30,*,end=900) l1
+                 read(30,*,end=900) lld,l1
      &                      ,press(l_seg),dbt(l_seg)
      &                      ,qna(l_seg),qns(l_seg),ea(l_seg),wind(l_seg)
      &                      ,qin(l_seg),qout(l_seg)
+                 ea(l_seg)  = .01*ea(l_seg)
+                 qna(l_seg) = qna(l_seg)/4186.8
+                 qns(l_seg) = qns(l_seg)/4186.8
                  if (qin(l_seg) < 0.5) then
                      qin(l_seg)=qout(l_seg)
                  end if
@@ -357,7 +362,7 @@ c
 c    Stream speed estimated with Leopold coefficients
 c 
                  u(l_seg)=U_a(l_seg)*(qavg**U_b(l_seg)) 
-                 u(l_seg) = amax1(u_min(l_seg),u(l_seg))
+                 u(l_seg) = amax1(1.0,u(l_seg))
 c 
                  qdiff(l_seg)=(qout(l_seg)-qin(l_seg))/delta_n
 c 
@@ -421,6 +426,8 @@ c
                      if(dt_total.lt.dt_comp) then
                         x_part(ns)=x_part(ns)
      .				         +dx(segment_cell(nr,nx_part))
+           write(28,*) 'Path ',nr,no_wr,nx_part,ns,dt_total
+     &                       ,x_part(ns),dt_comp,x_bndry
 c     
 c     If the particle has started upstream from the boundary point, give it
 c     the value of the boundary
@@ -450,12 +457,15 @@ c     interval.
 c
 
                         dt_before=dt_part(ns)
+                        xpart_before=x_part(ns)
                         dt_part(ns)
      .                       =dt_comp-dt_total+dt_part(ns)
                         x_part(ns)=x_part(ns)
      .                            +u(segment_cell(nr,nx_part))
      .                            *dt_part(ns)
-                        if(x_part(ns).ge.x_head) then
+      write(28,*) 'DT',ns,dt_before,dt_part(ns),xpart_before,x_part(ns)
+      write(28,*) ns,nr,no_wr,nx_part,u(segment_cell(nr,nx_part))
+                       if(x_part(ns).ge.x_head) then
                            x_part(ns)=x_head
                            nx_s=nx_s-1
                            dt_part(ns)=dt(head_cell(nr))
@@ -549,7 +559,7 @@ c
 c    Set NCELL0 for purposes of tributary input
 c
                      ncell0=nncell
-                     dt_total=dt_calc
+                     dt_total=0.0
                      do nm=no_dt(ns),1,-1
                        u_river=u(nncell)/3.2808
                        z=depth(nncell)
@@ -557,7 +567,11 @@ c
      &                      (t0,QSURF,A,B,nncell)
                        t_eq=-B/A
                        qdot=qsurf/(z*rfac)
+                       dt_calc = dt_part(nm)
                        t0=t0+qdot*dt_calc  
+                        dt_total=dt_total+dt_calc
+c                        write(28,*) 'Calc ',ns,nm,nncell,u(nncell)
+c     &                                    ,qdot,z,dt_total
 
                        if(t0.lt.0.0) t0=0.0
  400                   continue
@@ -599,8 +613,6 @@ c
                            ncell0=nncell
                            DONE=.FALSE.
                         end if
-                        dt_calc=dt(nncell)
-                        dt_total=dt_total+dt_calc
                       end do
                       if (t0.lt.0.5) t0=0.5
                      temp(nr,ns,n2)=t0
@@ -621,14 +633,15 @@ c
                      end if
 c                     if (pp_T) then
 c                     if(nsmod.eq.0) then
-                       qsw_out=4186.8*qns(nncell)
+                       qsw_out=4186.8*qns(ncell)
                        rmile_plot=x_dist(nr,ns)/5280.
                        write(20,
-     &                '(f11.5,i5,1x,i4,1x,2i5,1x,5f7.2,f9.2,f9.1)') 
-     &                       time,nyear_out,ndout,ncell,ns,t0
+     &                '(f11.5,i5,1x,2i4,1x,3i5,1x,5f7.2,f9.2,f9.1)') 
+     &                       time,nyear_out,ndout,ndd,ncell,nncell,ns,t0
      &                      ,T_head(nr),dbt(ncell)
      &                      ,depth(ncell),u(ncell),qin(ncell),qsw_out
                        pp_T=.FALSE.
+
 
 c                     end if
 c
