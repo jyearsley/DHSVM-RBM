@@ -141,6 +141,14 @@ c
 c
       end do
 c
+c Iniialize the upstream cell index
+c
+      do n = 1,500
+        do nn = 1,50
+          upstrm_cell(n,nn) = -1
+        end do
+      end do
+c
 c     Start reading the reach date and initialize the reach index, NR
 c     and the cell index, NCELL
 c
@@ -201,64 +209,45 @@ C
 
         read(90,*) Dummy_B,nnc,Dummy_B,node(nnc)
      &           ,Dummy_B,x_0,Dummy_B,x_1
-     &           ,Dummy_B,elev( nrch),ndelta(ncell),wr_type
+     &           ,Dummy_B,elev( nrch),ndelta(ncell)
+     &           ,Dummy_B,no_wru,wr_type
+c
+        unit_type(nrch,no_wru) = wr_type
+c
         
 c
 c Select either the RIVER or RSRVR case
 c
-                  Select Case(wr_type)
-                    case('RIVER')
-                    Is_a_Res = .FALSE.
-                    if (.not.Is_a_Riv) then
-                      no_wr_units( nrch) = no_wr_units( nrch) + 1
-                      upstrm_cell( nrch,no_wr_units( nrch)) = ncell-1
-                      Is_a_Riv = .TRUE.
+                      if (upstrm_cell(nrch,no_wru) .lt. 0) then
+                        upstrm_cell( nrch,no_wru) = ncell-1
+                      end if
                       nseg = 0
-                      no_celm( nrch,no_wr_units( nrch)) = 0
-                      cells_wr(nrch,no_wr_units( nrch))  = 0
+                      no_celm( nrch,no_wru) = 0
+                      cells_wr(nrch,no_wru)  = 0
                       x_dist(nrch,0) = x_1 
-                      write(*,*) 'x_dist -',x_1,x_dist(nrch,0)
-                    end if
                     do ncll = 1,ndelta(ncell)
                       nseg = nseg + 1
-                      no_celm( nrch,no_wr_units( nrch)) 
-     &                  = no_celm( nrch,no_wr_units( nrch))+1
-                      segment_cell( nrch,no_wr_units( nrch),nseg)=ncell
+                      no_celm(nrch,no_wru) 
+     &                  = no_celm(nrch,no_wru)+1
+                      segment_cell(nrch,no_wru,nseg)=ncell
                       dx(ncell)=(x_1-x_0)/ndelta(ncell)
                       x_dist(nrch,nseg) = x_dist(nrch,nseg-1)-dx(ncell)
-                      write(*,*) 'x_dist -',nseg,x_dist(nrch,nseg)
-     &                                          ,x_dist(nrch,nseg+1)
                     end do
-                    unit_type( nrch,no_wr_units( nrch)) = 'RIVER'
-                    cells_wr(nrch,no_wr_units( nrch)) 
-     &                   = cells_wr(nrch,no_wr_units( nrch)) + 1
-      write(*,*) 'RIVER ',nseg,x_dist(nr,nseg), no_wr_units( nrch)
-     &          ,upstrm_cell( nrch,no_wr_units( nrch))
-     &          ,cells_wr( nrch,no_wr_units( nrch))
-     &          ,nseg,segment_cell( nrch,no_wr_units( nrch),nseg)
+                    cells_wr(nrch,no_wru) 
+     &                   = cells_wr(nrch,no_wru) + 1
+      write(*,*) wr_type,nseg,x_dist(nrch,nseg), no_wru
+     &          ,upstrm_cell(nrch,no_wru)
+     &          ,cells_wr(nrch,no_wru)
+     &          ,nseg,segment_cell(nrch,no_wru,nseg)
      &                            ,x_1,x_0,dx(ncell)                        
-                    case('RSRVR')
-                      Is_a_Riv = .FALSE.
-                      if (.not.Is_a_Res) then
-                        no_wr_units( nrch) = no_wr_units( nrch) + 1
-                        upstrm_cell( nrch,no_wr_units(nrch)) = ncell-1
-                        Is_a_Res = .TRUE.
-                      end if
-                      unit_type( nrch,no_wr_units( nrch)) = 'RSRVR'
-                      cells_wr( nrch,no_wr_units( nrch)) = ncell                          
-      write(*,*) 'RSRVR ',Is_a_Res, Is_a_Riv, no_wr_units( nrch)
-     &          ,upstrm_cell( nrch,no_wr_units( nrch))
-     &          ,unit_type( nrch,no_wr_units( nrch))
-     &          ,cells_wr( nrch,no_wr_units( nrch))     
-                    End Select         
+                      cells_wr(nrch,no_wru) = ncell                          
 c
 
   200 continue
 c 
-c
-c  Set the print
 c   
-C
+        no_wr_units(nrch) = no_wru
+c
       end do
 c
 c
@@ -314,7 +303,6 @@ c
         yr_days=366.
       end if
       day_fract=ndmo(start_month,lp_year)+start_day-1
-      write(*,*) 'day_fact day ',day_fract
       day_fract=day_fract/yr_days
       hr_fract=start_hour/(24.*yr_days)
       sim_incr=dt_comp/(365.*86400.)
@@ -322,7 +310,6 @@ c
       time=year+day_fract+hr_fract
 c
 c     Year loop starts
-      write(*,*) start_year,start_day,start_hour,time,day_fract,hr_fract
       do nyear=start_year,end_year
          write(*,*) ' Simulation Year - ',nyear
          nd_year=365
@@ -375,7 +362,7 @@ c
                      write(*,*) 'This is a river segment',nd,ndd
                    call RIVER(l_seg,nrch,no_wr)
                  case('RSRVR')
-c                     write(*,*) 'This is a reservoir segment'
+                     write(*,*) 'This is a reservoir segment'
                  End Select
 c
 c End SELECT
@@ -577,8 +564,6 @@ c
           nx_part=nx_part-1
           dt_part(ns)=dt(segment_cell(nr,no_wr,nx_part))
           dt_total=dt_total+dt_part(ns)
-c          write(*,*) 'Prior to 100 ',segment_cell(nr,no_wr,nx_part)
-c     &                              ,dt_total,dt_part(ns)
           go to 100
         else
 c
@@ -607,10 +592,8 @@ c          x_part(ns) = x_part(ns) + dxprt
         no_dt(ns)=nx_s
       end do
       DONE=.FALSE.
-c      write(*,*) 'Done ',DONE
       do ns=1,no_celm(nr,no_wr)
         ncell=segment_cell(nr,no_wr,ns)
-c        write(*,*) ns,no_celm(nr,no_wr),nr,no_wr,ncell
         itest=no_celm(nr,no_wr)
 c
 c     Net solar radiation (kcal/meter^2/second)
@@ -779,9 +762,36 @@ c Reservoir subroutine
 c
       SUBROUTINE RSRVR
 c
-c  Placeholder for the reservoir module
+c Reservoir flows
 c
-      write(*,*) 'Entering RESERVOIR module '
+      real*4 Q_in(2),Q_out(2),Q_vert(1)
+!
+! Reservoir temperatures are saved as T_res(m1,m2,m3,m4)
+! m1 = reach #, m2 = water resource unit #, m3 = layer #, m4 = time index
+!
+      real*4 T_res(1000,50,2,2)
+      SAVE T_res
+      data Pi/3.1415927/,rho_cp/1000./
+c
+      INCLUDE 'RBM.fi'
+!
+! Epilimnion
+!
+      T_epi = T_res(nr,no_wr,1,n1)
+      V_epi = volume(nr,no_wr,1)
+     &       + (q_surface*A_surf(nr,no_wr) 
+     &       + (Q_in(1)*T_in(1)- Q_out(1)*T_epi)/V_epi))*deltat_t 
+c
+      if (T_epi .lt. 0.0) T_epi = 0.0
+c
+c Hypolimnion
+c
+      T_hyp = T_res(nr,no_wr,2,n1)
+      V_hyp = volume(nr,no_wr,2)
+     &       + (Q_in(2)*T_in(2)- Q_out(2)*T_hyp)/V_hyp)*deltat_t 
+c
+      if (T_hyp .lt. 0.0) T_hyp = 0.0
+c
       return
       end
 c
