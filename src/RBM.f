@@ -152,9 +152,12 @@ c
 c     Start reading the reach date and initialize the reach index, NR
 c     and the cell index, NCELL
 c
-      ncell = 0
-      nrch  = 0
+      ncell    = 0
+      nrch     = 0
+      no_res   = 0
       ns_total = 0
+      no_wr_0  = 0
+      nseg     = 0
   100 continue
 C
 C     Card Group IIb. Reach characteristics
@@ -216,30 +219,49 @@ c
 c
         
 c
-c Select either the RIVER or RSRVR case
+c Set reservior indices and geometry
 c
+        if (wr_type .eq. 'RSRVR') then
+          ndelta(ncell) = 1
+          no_res = no_res + 1
+          res_no(nrch,no_wru)   = no_res
+          volume(nrch,no_res,1) = U_a(ncell)
+          volume(nrch,no_res,2) = U_b(ncell)
+          a_surf(nrch,no_res,1) = D_a(ncell)
+          a_surf(nrch,no_res,2) = D_b(ncell)
+          Kappa(nrch,no_res)    = D_min(ncell)
+        end if             
                       if (upstrm_cell(nrch,no_wru) .lt. 0) then
                         upstrm_cell( nrch,no_wru) = ncell-1
                       end if
-                      nseg = 0
-                      no_celm( nrch,no_wru) = 0
-                      cells_wr(nrch,no_wru)  = 0
-                      x_dist(nrch,0) = x_1 
+                      if (no_wru .ne. no_wru_0) then
+c                        nseg = 0
+                        head_cell(nrch,no_wru) = ncell
+                        no_celm( nrch,no_wru) = 0
+                        cells_wr(nrch,no_wru)  = 0
+                        x_dist(nrch,no_wru,nseg) = x_1
+                        no_wru_0 = no_wru
+                      end if 
                     do ncll = 1,ndelta(ncell)
                       nseg = nseg + 1
                       no_celm(nrch,no_wru) 
      &                  = no_celm(nrch,no_wru)+1
                       segment_cell(nrch,no_wru,nseg)=ncell
                       dx(ncell)=(x_1-x_0)/ndelta(ncell)
-                      x_dist(nrch,nseg) = x_dist(nrch,nseg-1)-dx(ncell)
+                      x_dist(nrch,no_wru,nseg) 
+     &                = x_dist(nrch,no_wru,nseg-1)-dx(ncell)
+c                    end do
+c                    cells_wr(nrch,no_wru) 
+c     &                   = cells_wr(nrch,no_wru) + 1
+      write(*,*) wr_type,nseg,x_dist(nrch,no_wru,nseg), no_wru
+     &          ,upstrm_cell(nrch,no_wru)
+     &          ,cells_wr(nrch,no_wru)
+     &          ,segment_cell(nrch,no_wru,nseg)
+     &          ,x_1,x_0,dx(ncell)                        
                     end do
                     cells_wr(nrch,no_wru) 
      &                   = cells_wr(nrch,no_wru) + 1
-      write(*,*) wr_type,nseg,x_dist(nrch,nseg), no_wru
-     &          ,upstrm_cell(nrch,no_wru)
-     &          ,cells_wr(nrch,no_wru)
-     &          ,nseg,segment_cell(nrch,no_wru,nseg)
-     &                            ,x_1,x_0,dx(ncell)                        
+      write(*,*) 'WRU cells ',nrch,no_wru,cells_wr(nrch,no_wru)
                       cells_wr(nrch,no_wru) = ncell                          
 c
 
@@ -266,6 +288,7 @@ c
   900 END
       SUBROUTINE SYSTMM
 c
+      integer res_nn
       integer ndmo(12,2)
 c 
 
@@ -357,12 +380,14 @@ c     Read advected energy and meteorology data
 c
 c Select either the RIVER or RSRVR case
 c
-               Select Case(unit_type(nr,no_wr))
+               Select Case(unit_type(nrch,no_wr))
                  case('RIVER')
-                     write(*,*) 'This is a river segment',nd,ndd
+                   write(*,*) 'This is a river segment',nd,ndd
                    call RIVER(l_seg,nrch,no_wr)
-                 case('RSRVR')
-                     write(*,*) 'This is a reservoir segment'
+                 case('RSRVR')      
+                   write(*,*) 'This is a reservoir segment'
+                   res_nn = res_no(nrch,no_wr)
+                   call RSRVR(lseg,nrch,no_wr,res_nn)
                  End Select
 c
 c End SELECT
@@ -412,23 +437,31 @@ c
       REAL*4 Ksw,LVP
       real*4 q_fit(2),T_fit(2),evrate
       INCLUDE 'RBM.fi'
-      data evrate/1.5e-9/,pf/0.640/
+c      data evrate/1.5e-9/,pf/0.640/
       parameter (pi=3.14159)
+      parameter (P_FCTR=64.0,RHO=1000.,EVRATE=1.5e-11)
 c     
       td=nd
-      evap_rate=evrate
+      evap_rate=EVRATE
       T_fit(1)=tsurf-0.5
       T_fit(2)=tsurf+0.5
       do i=1,2
-         E0=2.1718E8*EXP(-4157.0/(T_fit(i)+239.09))
-         RB=PF*(DBT(ncell)-T_fit(i))
-         LVP=597.0-0.57*T_fit(i)
-         QEVAP=1000.*LVP*evap_rate*WIND(ncell)
+         T_kelvin = T_fit(i) + 273.0
+         e0=2.1718E10*EXP(-4157.0/(T_kelvin-33.91))
+         rb=P_FCTR*(DBT(ncell)-T_fit(i))
+c         LVP=597.0-0.57*T_fit(i)
+c         QEVAP=1000.*LVP*evap_rate*WIND(ncell)
+         lvp=1.91846e06*(T_kelvin/(T_kelvin-33.91))**2
+         QEVAP=rho*lvp*evap_rate*WIND(ncell)
          if(qevap.lt.0.0) qevap=0.0
-         QCONV=RB*QEVAP
+         QCONV=rb*QEVAP
          QEVAP=QEVAP*(E0-EA(ncell))
-         QWS=6.693E-2+1.471E-3*T_fit(i)
+c         QWS=6.693E-2+1.471E-3*T_fit(i)
+c  SI units
+c
+         QWS=280.23+6.1589*T_fit(i)
          q_fit(i)=QNS(ncell)+0.97*QNA(ncell)-QWS-QEVAP+QCONV
+         write(27,*) 'Heat ',qns(ncell),qna(ncell),qws,qevap,qconv
       end do
 
       A=(q_fit(1)-q_fit(2))/(T_fit(1)-T_fit(2))
@@ -450,7 +483,8 @@ c
       real*4 dt_part(2000),x_part(2000)
       INCLUDE 'RBM.fi'
       data ndltp/-2,-1,-2,-2/,nterp/4,3,2,3/
-      data pi/3.14159/,rfac/304.8/
+c      data pi/3.14159/,rfac/304.8/
+      parameter (PI=3.14159,RFAC=4.184e6)
 c
       l_seg = 0
 c
@@ -463,20 +497,21 @@ c
 c
 c   Adjusting output units from DHSVM for radiation and vapor pressure
 C     
-        qna(l_seg) = 2.3884E-04*qna(l_seg)
-        qns(l_seg) = 2.3884E-04*qns(l_seg)
-        ea(l_seg)  = 0.01*ea(l_seg)
-        if (qin(l_seg) < 0.1) then
-          qin(l_seg)=qout(l_seg)
+c        qna(l_seg) = 2.3884E-04*qna(l_seg)
+c        qns(l_seg) = 2.3884E-04*qns(l_seg)
+c        ea(l_seg)  = 0.01*ea(l_seg)
+        if (qin(l_seg) < 0.5) then
+           qin(l_seg)=qout(l_seg)
         end if
         qavg=0.5*(qin(l_seg)+qout(l_seg))
 c
 c    Stream speed estimated with Leopold coefficients
 c 
-        u(l_seg)=U_a(l_seg)*(qavg**U_b(l_seg)) 
-        u(l_seg) = amax1(1.0,u(l_seg))
+                 u(l_seg)=U_a(l_seg)*(qavg**U_b(l_seg)) 
+                 u(l_seg) = amax1(u_min(l_seg),u(l_seg))
 c 
-        qdiff(l_seg)=(qout(l_seg)-qin(l_seg))/delta_n
+                 qdiff(l_seg)=(qout(l_seg)-qin(l_seg))/delta_n
+c 
 c 
         dt(l_seg)=dx(l_seg)/u(l_seg)
 c
@@ -501,8 +536,8 @@ c     Headwaters flow and temperature
 c
  90            continue 
 c
-      nc_head=segment_cell(nr,no_wr,upstrm_cell(nr,no_wr_units(nr)))
-      if(nc_head .eq. 1) then
+      nc_head=segment_cell(nr,no_wr,upstrm_cell(nr,no_wr))
+      if(nc_head .eq. 0) then
         T_smth(nr)=b_smooth*T_smth(nr)
      &            +a_smooth*dbt(nc_head)
       T_head(nr)=mu(nr)
@@ -517,7 +552,7 @@ c
 c
 c Temporary method for fixing headwaters location - best done in Begin.f90
 c 
-      x_head=x_dist(nr,0)
+      x_head=x_dist(nr,no_wr,0)
       x_bndry=x_head-1.0
 
 
@@ -534,7 +569,7 @@ c
         nx_part=ns
         dt_part(ns)=dt(ncell)
         dt_total=dt_part(ns)
-        x_part(ns)=x_dist(nr,ns)
+        x_part(ns)=x_dist(nr,no_wr,ns)
  100    continue
 c
 c     Determine if the total elapsed travel time is equal to the
@@ -543,8 +578,8 @@ c
 
         if(dt_total.lt.dt_comp) then
            x_part(ns)=x_part(ns)+dx(segment_cell(nr,no_wr,nx_part))
-           write(27,*) 'Path ',nr,no_wr,nx_part,ns,dt_total
-     &                       ,x_part(ns),dt_comp,x_bndry
+c           write(27,*) 'Path ',nr,no_wr,nx_part,ns,dt_total
+c     &                       ,x_part(ns),dt_comp,x_bndry
 c     
 c     If the particle has started upstream from the boundary point, give it
 c     the value of the boundary
@@ -579,11 +614,11 @@ c
 c          x_part(ns) = x_part(ns) + dxprt
           x_part(ns)=x_part(ns)+u(segment_cell(nr,no_wr,nx_part))
      &              *dt_part(ns)
-      write(27,*) 'DT',ns,dt_before,dt_part(ns),xpart_before,x_part(ns)
+c      write(27,*) 'DT',ns,dt_before,dt_part(ns),xpart_before,x_part(ns)
           if(x_part(ns).ge.x_head) then
             x_part(ns)=x_head
             nx_s=nx_s-1
-            dt_part(ns)=dt(head_cell(nr))
+            dt_part(ns)=dt(head_cell(nr,no_wr))
           end if
         end if
  200    continue
@@ -647,7 +682,7 @@ c     Perform polynomial interpolation
 c
         do ntrp=1,nterp(npndx)
           npart=nseg+ntrp+ndltp(npndx)-1
-          xa(ntrp)=x_dist(nr,npart)
+          xa(ntrp)=x_dist(nr,no_wr,npart)
           ta(ntrp)=temp(nr,npart,n1)
         end do
         x=x_part(ns)
@@ -669,15 +704,14 @@ c
         dt_total=0.0
         do nm=no_dt(ns),1,-1
           u_river=u(nncell)/3.2808
-          z=depth(nncell)
+          z=depth(nncell)/3.2808
           call energy(t0,QSURF,A,B,nncell)
           t_eq=-B/A
           qdot=qsurf/(z*rfac)
-          dt_calc=dt_part(nm)
+c          dt_calc=dt_part(nm)
           dt_total=dt_total+dt_calc
-          t0=t0+qdot*dt_calc  
-          write(27,*) 'Calc ',ns,nm,nncell,u(nncell)
-     &                      ,qdot,z,dt_total
+          t0=t0+qdot*dt_calc 
+          qqtotal = qdot*dt_calc  
           if(t0.lt.0.0) t0=0.0
  400      continue
 c
@@ -721,6 +755,7 @@ c
             ncell0=nncell
             DONE=.FALSE.
           end if
+          dt_calc=dt(nncell)
         end do
         if (t0.lt.0.5) t0=0.5
         temp(nr,ns,n2)=t0
@@ -739,14 +774,13 @@ c
             nyear_out=nyear+1
           end if
         end if
-        qsw_out=4186.8*qns(ncell)
-        rmile_plot=x_dist(nr,ns)/5280.
+        qsw_out=qns(ncell)
+        rmile_plot=x_dist(nr,no_wr,ns)/5280.
         write(20,
      &                '(f11.5,i5,1x,2i4,1x,3i5,1x,5f7.2,f9.2,f9.1)') 
      &                       time,nyear_out,ndout,ndd,ncell,nncell,ns,t0
      &                      ,T_head(nr),dbt(ncell)
      &                      ,depth(ncell),u(ncell),qin(ncell),qsw_out
-
 c                     end if
 c
 c     End of computational element loop
@@ -760,37 +794,64 @@ c
 c
 c Reservoir subroutine
 c
-      SUBROUTINE RSRVR
+      SUBROUTINE RSRVR(l_seg,nr,no_wr,res_nn)
 c
 c Reservoir flows
 c
-      real*4 Q_in(2),Q_out(2),Q_vert(1)
+      real*4 Q_in(2),Q_out(2),T_in(2)
 !
 ! Reservoir temperatures are saved as T_res(m1,m2,m3,m4)
-! m1 = reach #, m2 = water resource unit #, m3 = layer #, m4 = time index
+! m1 = reach #, m2 = water resource unit #, m3 = res #, m4 = layer #, m5 = time index
 !
-      real*4 T_res(1000,50,2,2)
+      integer res_nn
+      real*4 T_res(1000,10,10,2,2)
+      INCLUDE 'RBM.fi'
       SAVE T_res
       data Pi/3.1415927/,rho_cp/1000./
 c
       INCLUDE 'RBM.fi'
-!
-! Epilimnion
-!
-      T_epi = T_res(nr,no_wr,1,n1)
-      V_epi = volume(nr,no_wr,1)
-     &       + (q_surface*A_surf(nr,no_wr) 
-     &       + (Q_in(1)*T_in(1)- Q_out(1)*T_epi)/V_epi))*deltat_t 
 c
-      if (T_epi .lt. 0.0) T_epi = 0.0
+c Update segment and cell #'s
+c
+      l_seg = lseg + 1
+      ncell = segment_cell(nr,no_wr,l_seg)
+c
+c Initialize epilimnion and hypolimnion temperatures
+c
+      T_epi = T_res(nr,no_wr,res_nn,1,n1)
+      T_hyp = T_res(nr,no_wr,res_nn,2,n1)
+c
+c Call energy budget routine
+c
+      Call ENERGY(T_epi,q_surface,A,B,ncell)
+
 c
 c Hypolimnion
 c
-      T_hyp = T_res(nr,no_wr,2,n1)
-      V_hyp = volume(nr,no_wr,2)
-     &       + (Q_in(2)*T_in(2)- Q_out(2)*T_hyp)/V_hyp)*deltat_t 
+      Q_vert = AMAX1(Q_in(1)Q_in(2))
+      V_hyp = volume(nr,res_nn,2)
+      T_hyp = T_hyp 
+     &      + ((Q_vert*T_epi+Q_in(2)*T_in(2)- Q_out(2)*T_hyp)/V_hyp)
+     &      * deltat_t 
 c
       if (T_hyp .lt. 0.0) T_hyp = 0.0
+!
+! Epilimnion
+!
+
+      V_epi = volume(nr,res_nn,1)
+      T_epi = T_epi 
+     &      + (q_surface*a_surf(nr,res_nn,1) 
+     &      + (Q_in(1)*T_in(1)- Q_out(1)*T_epi)/V_epi)*deltat_t 
+c
+      if (T_epi .lt. 0.0) T_epi = 0.0
+c
+      T_res(nr,res_nn,no_wr,1,n1) = T_epi
+      T_res(nr,res_nn,no_wr,2,n1) = T_hyp
+c
+      Q_total =  Q_out(1)*T_epi + Q_out(2)*T_hyp
+c
+      temp(nr,l_seg,n1) =  (Q_out(1)*T_epi + Q_out(2)*T_hyp)/Q_total
 c
       return
       end
@@ -895,7 +956,13 @@ C
 
       RETURN
       END
-
+c
+      REAL FUNCTION DENSITY(T)
+         DENSITY = ((((6.536332E-9*T-1.120083E-6)*T+1.001685E-4)
+     &           * T-909529E-3)*T+6.793952E-2)*T+0.842594
+         DENSITY = DENSITY + 999.0
+      RETURN
+      END   
 
 
 

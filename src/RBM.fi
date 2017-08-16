@@ -22,6 +22,7 @@ C
      &  no_celm(500,50),no_cells(500),no_tribs(500),node(500)
      & ,main_stem(500),last_seg(500)
      & ,ndelta(500),no_wr_units(500)
+     & ,res_no(500,20)
 c
 c    Added last_seg(5000) to COMMON/BLOCK3/ to handle tributary
 c    input temperature  11/14/2008
@@ -42,7 +43,8 @@ C                  CHARACTERISTICS AND RIVER MILE INDICES
 C                  FOR RNGKMOD.
 C
       COMMON/BLOCK6/dx(500),dt(500)
-     &  ,x_dist(500,0:500),u(500),elev(500)
+     &  ,x_dist(500,20,0:500),u(500),elev(500)
+     &  ,a_surf(500,20,2),volume(500,20,2),Kappa(500,20)
 C
 C
 C     BLOCKK.COM - Contains arrays with meteorological data
@@ -55,8 +57,8 @@ C
 c
 c     Declare variables
 c
-      COMMON/BLOCK9/segment_cell(500,20,500),trib(500,500)
-     &             ,head_cell(500)
+      COMMON/BLOCK9/segment_cell(500,20,0:500),trib(500,500)
+     &             ,head_cell(500,50)
 c
       integer flow_cells,heat_cells,lat_flow
      &         ,segment_cell,trib,head_cell
@@ -70,7 +72,7 @@ c
        COMMON/BLOCKB/
      &         day,day_fract,hr_fract,sim_incr,year,xd_year
 
-      real*4 mu
+      real*4 Kappa,mu
       real*8 time
       real*8 day,day_fract,hr_fract,sim_incr,year,xd_year
       integer upstrm_cell,cells_wr
