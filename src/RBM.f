@@ -112,7 +112,7 @@ c
 c
 c Kludge here for averaged forcing 
 C
-c      nwpd = 1
+      nwpd = 1
       write(*,*) start_time,'  ',end_time,nwpd,nd_start
 c 
       write(*,*) 'Number of simulations per day - ',nwpd
@@ -480,6 +480,7 @@ c
      .     ,ndltp(4),nterp(4)
       logical DONE,pp_T
       real*4 xa(4),ta(4)
+      real*4 lat_flow
       real*4 dt_part(2000),x_part(2000)
       INCLUDE 'RBM.fi'
       data ndltp/-2,-1,-2,-2/,nterp/4,3,2,3/
@@ -520,7 +521,6 @@ c
         depth(l_seg)=D_a(l_seg)*(qavg**D_b(l_seg))
         depth(l_seg)=amax1(D_min(l_seg),depth(l_seg))
 c
-        lat_flow(l_seg)=qout(l_seg)-qin(l_seg)
       end do
 c
 c  Set the value of the tributary flow at the downstream segment
@@ -717,30 +717,26 @@ c          dt_calc=dt_part(nm)
 c
 c     Look for a tributary.
 c 
-          q1=qin(nncell)
-
-          ntribs=no_tribs(nncell)
-          if (ntribs.gt.0.and..not.DONE) then
+          q1      = qin(nncell)
+          q2      = qin(nncell)
+          Q_advct = 0.0    
+          ntribs = no_tribs(nncell)
+          do while (ntribs.gt.0.and..not.DONE)
             do ntrb=1,ntribs
-              nr_trib=trib(nncell,ntrb)
-              q2=q1+q_trib(nr_trib)
-              t0=(q1*t0+q_trib(nr_trib)*T_trib(nr_trib))/q2
-              q1=q1+q_trib(nr_trib)
-c
-  450 continue
+              nr_trib = trib(nncell,ntrb)
+              q2      = q2+q_trib(nr_trib)
+              Q_advct = Q_advct + q_trib(nr_trib)*T_trib(nr_trib)
             end do
             DONE=.TRUE.
-          end if
-          t00=t0
-          if (lat_flow(nncell).gt.0) then
-            q1=0.5*(qin(nncell)+qout(nncell))
-            q2=q1+lat_flow(nncell)
+          end do
+c
+          lat_flow = q2 - q1
+          if (lat_flow.gt.0) then
 c
 c  Modified nonpoint source temperature so as to be the same
 c  as the instream simulated temperature for Connecticut River 7/2015
             T_dist=t0
-            t0=(q1*t0+lat_flow(nncell)*T_dist)/q2
-            dtlat=t0-t00
+            Q_advct = Q_advct + lat_flow*T_dist
           end if
  500      continue
 c
@@ -809,8 +805,6 @@ c
       SAVE T_res
       data Pi/3.1415927/,rho_cp/1000./
 c
-      INCLUDE 'RBM.fi'
-c
 c Update segment and cell #'s
 c
       l_seg = lseg + 1
@@ -828,7 +822,7 @@ c
 c
 c Hypolimnion
 c
-      Q_vert = AMAX1(Q_in(1)Q_in(2))
+      Q_vert = AMAX1(Q_in(1),Q_in(2))
       V_hyp = volume(nr,res_nn,2)
       T_hyp = T_hyp 
      &      + ((Q_vert*T_epi+Q_in(2)*T_in(2)- Q_out(2)*T_hyp)/V_hyp)
@@ -930,11 +924,6 @@ c      DIMENSION XA(N),YA(N),C(N),D(N)
 	  tntrp=y
       RETURN
       END
-c      function julian(iy,id)
-c	  julian=10000*iy+id
-c	  return
-c	  end
-c
 c
       INTEGER FUNCTION Julian (YEAR,MONTH,DAY)
 C

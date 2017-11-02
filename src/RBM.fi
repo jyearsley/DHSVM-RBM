@@ -1,9 +1,7 @@
 C
 C     UNDIMENSIONED INTEGER VARIABLES
 C
-      COMMON/BLOCK1/
-     & flow_cells,heat_cells
-     & ,NDAYS,nreach,ntrb,nysim
+      COMMON/BLOCK1/ NDAYS,nreach,ntrb,nysim
      & ,nyear,nyear1,nyear2
      & ,n1,n2,nwpd,nd,ndd,nd_start
      & ,start_year,start_month,start_day,start_hour
@@ -30,7 +28,6 @@ c
 C
       COMMON/BLOCK4/qin(500),q_trib(500),qout(500)
      &             ,qdiff(500),depth(500),width(500)
-     &             ,lat_flow(500)
      &             ,D_a(500),D_b(500),D_min(500)
      &             ,U_a(500),U_b(500),U_min(500)
 C
@@ -60,8 +57,7 @@ c
       COMMON/BLOCK9/segment_cell(500,20,0:500),trib(500,500)
      &             ,head_cell(500,50)
 c
-      integer flow_cells,heat_cells,lat_flow
-     &         ,segment_cell,trib,head_cell
+      integer segment_cell,trib,head_cell
      &         ,start_year,start_month,start_day,start_hour
      &         ,end_year,end_month,end_day,end_hour
 c
