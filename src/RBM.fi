@@ -32,7 +32,7 @@ C
      &             ,U_a(500),U_b(500),U_min(500)
 C
 C
-      COMMON/BLOCK5/ temp(500,-2:500,2),T_trib(500)
+      COMMON/BLOCK5/temp(500,20,-2:200,2),T_trib(500)
 c
 
 C     BLOCKI.COM - CONTAINS ARRAYS WITH DEPTH AND VELOCITY
@@ -50,7 +50,9 @@ C
      & QNS(500),QNA(500),DBT(500),WIND(500)
      & ,EA(500),PRESS(500),PF,PHPER
      & ,alf_Mu(500),beta(500),gmma(500),mu(500)
-     & ,T_head(500),T_smth(500)
+     & ,T_head(500,10),T_smth(500)
+c     & ,T_res(500,2,2)
+
 c
 c     Declare variables
 c
