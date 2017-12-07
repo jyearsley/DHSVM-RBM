@@ -41,7 +41,7 @@ C                  FOR RNGKMOD.
 C
       COMMON/BLOCK6/dx(500),dt(500)
      &  ,x_dist(500,20,0:500),u(500),elev(500)
-     &  ,a_surf(500,20,2),volume(500,20,2),Kappa(500,20)
+     &  ,a_surf(500,20,2),volume(500,20,2),Kappa(500)
 C
 C
 C     BLOCKK.COM - Contains arrays with meteorological data
@@ -69,7 +69,10 @@ c
 c
        COMMON/BLOCKB/
      &         day,day_fract,hr_fract,sim_incr,year,xd_year
-
+c
+       COMMON/BLOCKC/
+     &         IS_HEAD 
+      logical IS_HEAD
       real*4 Kappa,mu
       real*8 time
       real*8 day,day_fract,hr_fract,sim_incr,year,xd_year

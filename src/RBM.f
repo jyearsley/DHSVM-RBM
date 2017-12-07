@@ -156,15 +156,16 @@ c
       nrch     = 1
       no_res   = 0
       ns_total = 0
-      no_wr_0  = 0
       nseg     = 0
   100 continue
 C
 C     Card Group IIb. Reach characteristics
 C
        do while (nrch .le. nreach) 
-c         nrch = nrch + 1
-c      if( nrch .gt. nreach) go to 500
+c
+c Initialize index that counts the number of water resource units in this reach
+c
+         no_wru_0  = 0
 c
 c     Initialize NSEG, the total number of segments in this reach
       nseg=0
@@ -222,47 +223,55 @@ c
 c
 c Set reservior indices and geometry
 c
-          if (wr_type .eq. 'RSRVR') then
-            ndelta(ncell) = 1
-            no_res = no_res + 1
-            res_no(nrch,no_wru)   = no_res
-            volume(nrch,no_res,1) = U_a(ncell)
-            volume(nrch,no_res,2) = U_b(ncell)
-            a_surf(nrch,no_res,1) = D_a(ncell)
-            a_surf(nrch,no_res,2) = D_b(ncell)
-            Kappa(nrch,no_res)    = D_min(ncell)
-          end if             
           if (upstrm_cell(nrch,no_wru) .lt. 0) then
             upstrm_cell( nrch,no_wru) = ncell-1
           end if
           if (no_wru .ne. no_wru_0) then
             nseg = 0
             head_cell(nrch,no_wru) = ncell
-            no_celm( nrch,no_wru) = 0
+            no_celm(nrch,no_wru) = 0
             cells_wr(nrch,no_wru)  = 0
             x_dist(nrch,no_wru,nseg) = x_1
+c
+c If this is a reservoir, update reservoir index
+c
+            if (wr_type .eq. 'RSRVR') then
+              no_res = no_res + 1
+            end if
+c
+c Update water resource unit index
+c
             no_wru_0 = no_wru
           end if 
           do ncll = 1,ndelta(ncell)
             nseg = nseg + 1
+            if (wr_type .eq. 'RSRVR') then
+              no_res = no_res + 1
+c            res_no(nrch,no_wru)   = no_res
+              volume(no_res,nseg,1) = U_a(ncell)
+              volume(no_res,nseg,2) = U_b(ncell)
+              a_surf(no_res,nseg,1) = D_a(ncell)
+              a_surf(no_res,nseg,2) = D_b(ncell)
+              Kappa(no_res)         = D_min(ncell)
+            end if             
             no_celm(nrch,no_wru) = no_celm(nrch,no_wru)+1
             segment_cell(nrch,no_wru,nseg)=ncell
             dx(ncell)=(x_1-x_0)/ndelta(ncell)
             x_dist(nrch,no_wru,nseg) 
      &      = x_dist(nrch,no_wru,nseg-1)-dx(ncell)
-c         end do
-c                    cells_wr(nrch,no_wru) 
-c     &                   = cells_wr(nrch,no_wru) + 1
-            write(85,*) wr_type,nseg,x_dist(nrch,no_wru,nseg)
-     &                 ,no_wru,upstrm_cell(nrch,no_wru)
+            write(85,*) wr_type,no_wru,nseg
+     &                 ,upstrm_cell(nrch,no_wru)
      &                 ,ncell,cells_wr(nrch,no_wru)
      &                 ,segment_cell(nrch,no_wru,nseg)
-     &                 ,x_1,x_0,dx(ncell)                        
+     &                 ,x_dist(nrch,no_wru,nseg)
+     &                 ,x_dist(nrch,no_wru,nseg-1),x_1,x_0,dx(ncell)                        
           end do
                     cells_wr(nrch,no_wru) 
      &                   = cells_wr(nrch,no_wru) + 1
+          write(85,*) 
           write(85,*) 'WRU cells ',nrch,no_wru,cells_wr(nrch,no_wru)
-c                      cells_wr(nrch,no_wru) = ncell                          
+c                      cells_wr(nrch,no_wru) = ncell
+          write(85,*)                          
 c
 
   200 continue
@@ -310,13 +319,7 @@ c
           T_head(nr,no_wr)=mu(nr)
         end do
       end do
-c      do nres = 1,500
-c        do n = 1,2
-c          do nn = 1,2
-c            T_res(nres,n,nn) = 0.0
-c          end do
-c        end do
-c      end do
+c
       n1=1
       n2=2
       nobs=0
@@ -345,6 +348,8 @@ c
       sim_incr=dt_comp/(365.*86400.)
       year=start_year
       time=year+day_fract+hr_fract
+c Temporary for debugging
+      end_year =start_year+1
 c
 c     Year loop starts
       do nyear=start_year,end_year
@@ -360,7 +365,6 @@ c
 c        Day loop starts
          if (nyear.eq.start_year) then
            nd1=ndmo(start_month,lp_year)+start_day
-           write(*,*) 'nd1 ',nd1
          else
            nd1=1
          end if
@@ -387,30 +391,41 @@ c
              period=ndd
              time=year+(day-1.+hour_inc*period)/xd_year
 c
-c     Read advected energy and meteorology data      
+c Initialize number of reservoirs (index is basin-wide)
+c
+             res_nn = 0
+             ncell = 0
 c
              do nr=1,nreach
-               ncell = 0
+             write(29,*) 'reach ',nr,no_wr_units(nr)
+               IS_HEAD = .TRUE.
                nrch = nr
                nseg = 0
                do no_wr = 1,no_wr_units(nr)
+                write(29,*) 'Systemm ',no_wr,unit_type(nrch,no_wr)
 c
 c Select either the RIVER or RSRVR case
 c
                Select Case(unit_type(nrch,no_wr))
                  case('RIVER')
-                   write(*,*) 'river segment',nd,ndd,ncell,nr,no_wr
                    call RIVER(nseg,ncell,nr,no_wr)
                  case('RSRVR')      
-c                   write(*,*) 'This is a reservoir segment',ncell
-                   res_nn = res_no(nrch,no_wr)
+                   res_nn = res_nn + 1
                    call RSRVR(nseg,ncell,nrch,no_wr,res_nn)
-                 End Select
+               End Select
+               IS_HEAD = .FALSE. 
 c
 c End SELECT
 c
 
                end do
+c
+c Establish tributary temperatures at reach end
+c
+c
+               nseg_trib = no_celm(nr,no_wr_units(nr))
+	       T_trib(nr)=temp(nr,no_wr_units(nr),nseg_trib,n2)
+               write(29,*) 'end ',nseg_trib,nrch,no_wru,T_trib(nr)
 c
              end do
              ntmp=n1
@@ -466,19 +481,28 @@ c
       T_fit(2)=tsurf+0.5
       do i=1,2
          T_kelvin = T_fit(i) + 273.0
+c
+c Vapor pressure at water surface
          e0=2.1718E10*EXP(-4157.0/(T_kelvin-33.91))
+c
+c Bowen ratio
          rb=P_FCTR*(DBT(ncell)-T_fit(i))
-c         LVP=597.0-0.57*T_fit(i)
-c         QEVAP=1000.*LVP*evap_rate*WIND(ncell)
+c
+c Latent heat of vaporization
          lvp=1.91846e06*(T_kelvin/(T_kelvin-33.91))**2
+c
+c Evaporative heat flux
          QEVAP=rho*lvp*evap_rate*WIND(ncell)
          if(qevap.lt.0.0) qevap=0.0
+c
+c Convective heat flux
          QCONV=rb*QEVAP
          QEVAP=QEVAP*(E0-EA(ncell))
-c         QWS=6.693E-2+1.471E-3*T_fit(i)
-c  SI units
-c
+c 
+c Back radiation from the water surface
          QWS=280.23+6.1589*T_fit(i)
+c
+c Thermal energy budget for i = 1,2
          q_fit(i)=QNS(ncell)+0.97*QNA(ncell)-QWS-QEVAP+QCONV
       end do
 
@@ -507,7 +531,6 @@ c      data pi/3.14159/,rfac/304.8/
 c
       l_cell = 0
 c
-      if (no_wr .eq. 3) write(*,*) 'cellls ',cells_wr(nr,no_wr)
       do nc=1,cells_wr(nr,no_wr)
         l_cell = l_cell+1
         ncell  = ncell + 1
@@ -519,29 +542,21 @@ c
 c
 c Find the headwaters temperature
 c
-      nc_head=upstrm_cell(nr,no_wr)+1
-      if(ncell .eq. nc_head) then
-        call HEAD_TEMP (nseg,ncell,nr,no_wr)
+      nc_head=upstrm_cell(nr,no_wr)
+      write(29,*) 'nchead ',nr,no_wr,nc_head,ncell
+      if(ncell .eq. nc_head+1) then
+        call HEAD_TEMP (ncell,nr,no_wr)
+        write(28,*) 'head ',IS_HEAD,nr,no_wr,ncell,nseg
       end if
-      if (no_wr .eq. 3) write(29,*) 'cellls ',cells_wr(nr,no_wr)
 c
-c*************************************************************
-c Temporarily establish qin, qout  as a constant = 100 m**3/sec
-c
-        qin(ncell)  = 3531.5
-        qout(ncell) = 3531.5
-c
-c Temporarily estabilish speed, u, and depth
-c
-        depth(ncell) = 3.2808
-        u(ncell)     = 0.28935
-c*************************************************************
-c        qavg=0.5*(qin(ncell)+qout(ncell))
+c Average flow in segment for estimating hydraulic conditions
+
+        qavg=0.5*(qin(ncell)+qout(ncell))
 c
 c    Stream speed estimated with Leopold coefficients
 c 
-c                 u(ncell)=U_a(ncell)*(qavg**U_b(ncell)) 
-c                 u(ncell) = amax1(u_min(ncell),u(ncell))
+                 u(ncell)=U_a(ncell)*(qavg**U_b(ncell)) 
+                 u(ncell) = amax1(u_min(ncell),u(ncell))
 c 
 c                 qdiff(ncell)=(qout(ncell)-qin(ncell))/delta_n
 c 
@@ -550,8 +565,8 @@ c
 c
 c    Depth estimated with Leopold coefficients
 c 
-c        depth(ncell)=D_a(ncell)*(qavg**D_b(ncell))
-c        depth(ncell)=amax1(D_min(ncell),depth(ncell))
+        depth(ncell)=D_a(ncell)*(qavg**D_b(ncell))
+        depth(ncell)=amax1(D_min(ncell),depth(ncell))
 c
 c      end do
 c
@@ -574,7 +589,7 @@ c
 
 c   Do the reverse particle tracking
 c
-
+c      write(28,*) 'nr,no_celm ',nr,no_wr,no_celm(nr,no_wr)
       do ns=no_celm(nr,no_wr),1,-1
 c
 c     Segment is in cell SEGMENT_CELL(NC)
@@ -624,8 +639,6 @@ c
           dt_before=dt_part(ns)
           xpart_before =x_part(ns)
           dt_part(ns)=dt_comp-dt_total+dt_part(ns)
-          dxprt = u(segment_cell(nr,no_wr,nx_part))*dt_part(ns)
-c          x_part(ns) = x_part(ns) + dxprt
           x_part(ns)=x_part(ns)+u(segment_cell(nr,no_wr,nx_part))
      &              *dt_part(ns)
           if(x_part(ns).ge.x_head) then
@@ -640,9 +653,11 @@ c          x_part(ns) = x_part(ns) + dxprt
         no_dt(ns)=nx_s
       end do
       DONE=.FALSE.
+c
+c Begin simulations of temperature in this water resource unit
+c
       do ns=1,no_celm(nr,no_wr)
         ncell=segment_cell(nr,no_wr,ns)
-        itest=no_celm(nr,no_wr)
 c
 c     Net solar radiation (kcal/meter^2/second)
 c
@@ -688,26 +703,28 @@ c     the initial temperature to the boundary value
 c
         if (nseg.eq.1) then
           t0=T_head(nr,no_wr)
-          go to 350
-        end if
+        else
 c
 c     Perform polynomial interpolation
 c
-        do ntrp=1,nterp(npndx)
-          npart=nseg+ntrp+ndltp(npndx)-1
-          xa(ntrp)=x_dist(nr,no_wr,npart)
-          ta(ntrp)=temp(nr,no_wr,npart,n1)
-        end do
-        x=x_part(ns)
+          do ntrp=1,nterp(npndx)
+            npart=nseg+ntrp+ndltp(npndx)-1
+            xa(ntrp)=x_dist(nr,no_wr,npart)
+            ta(ntrp)=temp(nr,no_wr,npart,n1)
+          end do
+          x=x_part(ns)
   280   continue
 c
 c     Call the interpolation function
 c
 
-        t0=tntrp(xa,ta,x,nterp(npndx))
-        ttrp=t0
- 300    continue
- 350    continue
+          t0=tntrp(xa,ta,x,nterp(npndx))
+          ttrp=t0
+c
+c End of headwaters or interpolation block
+c
+        end if
+c
         dt_calc=dt_part(ns)
         nncell=segment_cell(nr,no_wr,nstrt_elm(ns))
 c
@@ -715,14 +732,19 @@ c    Set NCELL0 for purposes of tributary input
 c
         ncell0=nncell
         dt_total=0.0
-        do nm=no_dt(ns),1,-1
+        do nm=no_dt(ns),1,-1         
           u_river=u(nncell)/3.2808
           z=depth(nncell)/3.2808
+c
+c Calculate the transfer of energy across the air-water interface
+c
           call energy(t0,QSURF,A,B,nncell)
           t_eq=-B/A
           qdot=qsurf/(z*rfac)
-c          dt_calc=dt_part(nm)
+c          write(28,*) 'nd qdot dt_calc ',nd,nr,no_wr,nncell
+          dt_calc=dt_part(nm)
           dt_total=dt_total+dt_calc
+          too = t0
           t0=t0+qdot*dt_calc 
           if(t0.lt.0.0) t0=0.0
  400      continue
@@ -767,9 +789,6 @@ c
         end do
         if (t0.lt.0.5) t0=0.5
         temp(nr,no_wr,ns,n2)=t0
-        if (ncell .eq. cells_wr(nr,no_wr)) then
-	  T_trib(nr)=t0
-        end if
 c
 c   Write file 20 with all temperature output 11/19/2008
 c 
@@ -786,8 +805,11 @@ c
         end if
         qsw_out=qns(ncell)
         rmile_plot=x_dist(nr,no_wr,ns)/5280.
+c
+c Write output to unit 20
+c
         write(20,'(f11.5,i5,1x,2i4,1x,4i5,1x,5f7.2,f9.2,f9.1)') 
-     &                  time,nyear_out,ndout,ndd,ncell,nncell,ns,nseg
+     &                  time,nyear_out,ndout,ndd,no_wr,ncell,ns,nseg
      &                 ,t0,T_head(nr,no_wr),dbt(ncell)
      &                 ,depth(ncell),u(ncell),qin(ncell),qsw_out
 c                     end if
@@ -813,21 +835,67 @@ c Reservoir subroutine
 c
       SUBROUTINE RSRVR(nseg,ncell,nr,no_wr,res_nn)
 c
-c Reservoir flows
+c Reservoir inlows and advected thermal energy
 c
-      real*4 Q_in_res(2),Q_out_res(2),T_in(2),T_res(500,2,2)
+      real*4 q_in_res(2),q_out_res(2)
+      real*4 T_in(2),T_res(500,2,2),Q_advect(2)
 
 !
 ! Reservoir temperatures are saved as T_res(m1,m2,m3,m4)
 ! m1 = reach #, m2 = water resource unit #, m3 = res #, m4 = layer #, m5 = time index
 !
       integer res_nn
+      logical DONE
+      real*4 Area_sum(2),Vol_sum(2)
 c      real*4 T_res(500,2,2)
       INCLUDE 'RBM.fi'
       SAVE T_res
-      data Pi/3.1415927/,rho_cp/4.186e06/,cuft_cum/35.3134/
+      data Pi/3.1415927/,rho_cp/4.186e06/,cuft_cum/0.028318/
 c
+c Find the input temperature
+c
+      call HEAD_TEMP (ncell+1,nr,no_wr)
+
+c
+c Initialize  reservoir properties
+c
+      Area_sum(:) = 0.0
+      Vol_sum(:)  = 0.0
+
+c
+c Initialize epilimnion and hypolimnion temperatures
+c
+      T_epi = T_res(res_nn,1,n1)
+      T_hyp = T_res(res_nn,2,n1)
+    
+c*************************************************************
+c Convert upstream inflow to m**3/second
+c
+      q_inflow  = cuft_cum*qout(ncell)
+c
+c*************************************************************
+c
+c
+c Use inflow temperature to determine placement of upstream input
+c
+      T_inflow    = T_head(nr,no_wr)
+      q_in_res(:) = 0.0
+      T_in(:) = 0.0
+c
+      layer = NLAYER(T_inflow,T_epi)
+      T_in(layer)     = T_inflow
+      q_in_res(layer) = q_inflow
+c
+c
+      Q_advect(1) = q_in_res(1)*T_in(1)
+      Q_advect(2) = q_in_res(2)*T_in(2)
+c       
       nseg = 0
+c 
+c Initialize important reservoir properties
+c
+      Q_netsurf    = 0.0
+
 c
 c Cycle through the cells (NCELL) and segments (NSEG)
 c
@@ -837,10 +905,15 @@ c Update segment and cell #'s
 c
         ncell  = ncell + 1  
         nseg   = nseg + 1
+        DONE   = .FALSE.
+        write(29,*) 'Reservoir ',ncell,nseg,res_nn
 c
-c Find the input temperature
+c Accumulate surface areas and volumes of each reservoir cell
 c
-        call HEAD_TEMP (nseg,ncell,nr,no_wr)
+        do nl = 1,2
+          Area_sum(nl) = Area_sum(nl) + a_surf(nr,res_nn,nl)
+          Vol_sum(nl)  = Vol_sum(nl) + volume(nr,res_nn,nl)
+        end do
 c
 c Read the forcing file
 c
@@ -849,92 +922,84 @@ c
      &                    ,qna(ncell),qns(ncell)
      &                    ,ea(ncell),wind(ncell)
      &                    ,qin(ncell),qout(ncell)
-
-c*************************************************************
-c Temporarily establish qin, qout  as a constant = 100 m**3/sec
-c
-        qin(ncell)  = 3531.5/cuft_cum
-        qout(ncell) = 3531.5/cuft_cum
-c
-c*************************************************************
-       write(28,*) 'DAY ',nd
-       write(28,*) 'Start RES ',temp(nr,no_wr,nseg,n1)
-     &                         ,temp(nr,no_wr,nseg,n2)
-c
-c Initialize epilimnion and hypolimnion temperatures
-c
-        T_epi = T_res(1,1,n1)
-        T_hyp = T_res(1,2,n1)
 c
 c Call energy budget routine
 c
-        Call ENERGY(T_epi,q_surface,A,B,ncell)
-        q_surface = q_surface/rho_cp
+        Call ENERGY(T_epi,Q_surface,A,B,ncell)
+        Q_netsurf = Q_netsurf + a_surf(res_nn,nseg,1)*Q_surface/rho_cp
 c
-c Inflow temperature
-        T_nseg    = T_head(nr,no_wr)
-        pho_in  = DENSITY(T_nseg)
-        rho_epi = DENSITY(T_epi)
-        T_in(1) = T_nseg
-        Q_in_res(1) = qin(ncell)
-        Q_in_res(2) = 0.0
-        T_in(2) = 0.0
-        if (pho_in .gt. rho_epi) then
-          T_in(1) = 0.0
-          T_in(2) = T_nseg
-          Q_in_res(1) = 0.0
-          Q_in_res(2) = qin(ncell)
-        end if 
+c     Look for a tributary.
+c 
+          q1      = qin(ncell)
+          q2      = qin(ncell)
+          q_tmp   = 0.0
+c
+          Q_advct_trb = 0.0  
+          T_tmp       = 0.0  
+          ntribs = no_tribs(ncell)
+          do while (ntribs.gt.0.and..not.DONE)
+            do ntrb=1,ntribs
+              nr_trib = trib(ncell,ntrb)
+              q2      = q2+q_trib(nr_trib)
+              q_tmp   = q_tmp + q_trib(nr_trib)
+              Q_advct_trb = Q_advct_trb 
+     &                    + q_trib(nr_trib)*T_trib(nr_trib)
+              T_tmp = T_tmp + q_trib(nr_trib)*T_trib(nr_trib)
+            end do
+            DONE=.TRUE.
+          end do
+c
+c Add the advected thermal energy from the tributaries in this cell
+c
+          T_tmp = T_tmp/q_tmp
+          layer = NLAYER(T_tmp,T_epi)
+          Q_advect(layer) = Q_advect(layer) + Q_advct_trb
+c
+c End of the loop that accumlates area, volume, surface transfer and advected sources
+c from each reservoir cell
+c      
+      end do
+c
+c Reservoir outflows are based on the results from the last reservoir cell
+c
+        q_out_res(1) = 0.0
+        q_out_res(2) = qout(ncell)
+        q_total =  q_out_res(1) + q_out_res(2)
+
 c
 c Hypolimnion
 c
-        Q_vert = Q_in_res(1)
-        V_hyp = volume(nr,res_nn,2)
-        T_res(1,2,n2) = T_res(1,2,n1)
-     &        + ((Q_vert*T_res(1,1,n1)+Q_in_res(2)*T_in(2)
-     &        - Q_out_res(2)*T_res(1,2,n1))/ V_hyp)
-     &      * dt_comp 
-        write(28,*) 'T_hyp ',Q_vert,T_res(1,1,n1),q_in_res(2),T_in(2)
-     &                      ,Q_out_res(2),T_res(1,2,n1),V_hyp
+        q_vert = q_in_res(1)
 c
+        T_res(res_nn,2,n2) = T_res(res_nn,2,n1)
+     &        + ((q_vert*T_res(res_nn,1,n1) + Q_advect(2)
+     &        - q_out_res(2)*T_res(res_nn,2,n1))/ Vol_sum(2))
+     &      * dt_comp 
         if (T_res(1,2,n2) .lt. 0.0) T_res(1,2,n2) = 0.0
 !
-! Epili
+! Epilimnion
 !
-        V_epi = volume(nr,res_nn,1)
-        T_res(1,1,n2) = T_res(1,1,n1) 
-     &        + ((q_surface*a_surf(nr,res_nn,1) 
-     &        +  Q_in_res(1)*T_in(1)- Q_out_res(1)*T_res(1,1,n1))
-     &        / V_epi)*dt_comp 
-         a1 = q_surface*a_surf(nr,res_nn,1)*dt_comp/V_epi
-         a2 = Q_in_res(1)*T_in(1)*dt_comp/V_epi
-         a3 = Q_out_res(1)*T_res(1,1,n1)*dt_comp/V_epi
-         a4 = Q_in_res(1)*T_in(1)*dt_comp/V_epi
+        T_res(res_nn,1,n2) = T_res(res_nn,1,n1) 
+     &        + ((Q_netsurf 
+     &        +  q_in_res(1)*T_in(1)- q_out_res(1)*T_res(res_nn,1,n1))
+     &        / Vol_sum(1))*dt_comp 
+c         a1 = q_surface*a_surf(res_nn,1)*dt_comp/V_epi
+c         a2 = Q_in_res(1)*T_in(1)*dt_comp/V_epi
+c         a3 = Q_out_res(1)*T_res(nres_nn,1,n1)*dt_comp/V_epi
+c         a4 = Q_in_res(1)*T_in(1)*dt_comp/V_epi
 c
-        if (T_res(1,1,n2) .lt. 0.5) T_res(1,1,n2) = 0.5
+        if (T_res(res_nn,1,n2) .lt. 0.5) T_res(res_nn,1,n2) = 0.5
 c
 c
-        Q_out_res(1) = 0.0
-        Q_out_res(2) = qin(ncell)
-        Q_total =  Q_out_res(1) + Q_out_res(2)
 c
-        T_out = (Q_out_res(1)*T_res(1,1,n2) 
-     &        +  Q_out_res(2)*T_res(1,2,n2)) /  Q_total
-       write(28,*) 'T_out ',T_out,T_res(1,1,n1),T_res(1,1,n2)
-     &             ,T_res(1,2,n1),T_res(1,2,n2)
+        T_out = (q_out_res(1)*T_res(res_nn,1,n2) 
+     &        +  q_out_res(2)*T_res(res_nn,2,n2)) / q_total
         temp(nr,no_wr,nseg,n2) = T_out
-        write(28,*) 'temp(:,:,:) ',nr,ncell,nseg,n1,n2,no_wr
-     &                            ,T_out,temp(nr,no_wr,nseg,n1)
-c
         write(20,'(f11.5,i5,1x,2i4,1x,4i5,1x,5f7.2,f9.1,f9.1)') 
-     &                       time,nyear,nd,ndd,nseg,nseg,ncell,ncell
+     &                       time,nyear,nd,ndd,no_wr,ncell,nseg,nseg
      &                      ,T_out,T_out,dbt(ncell)
      &                      ,depth(ncell),u(ncell),qin(ncell)
      &                      ,q_surface
-c
-c End of NCELL loop
-c
-      end do
 c
 c      ntmp=n1
 c      n1=n2
@@ -946,41 +1011,30 @@ c
 c
 c Headwaters subroutine
 c
-      SUBROUTINE HEAD_TEMP (nseg,ncell,nr,no_wr)
+      SUBROUTINE HEAD_TEMP (ncell,nr,no_wr)
 !
 !
       INCLUDE 'RBM.fi'
 c
 c     Headwaters flow and temperature
 c
- 90            continue 
-c
-      if (no_wr .eq. 2) write(28,*)'DAY ',nd
-      if (no_wr .eq. 2) write(*,*) 'Headwaters ',nseg,ncell,nr,no_wr
-     & ,temp(nr,no_wr,no_celm(nr,no_wr-1),n1) 
-      if(ncell .eq. 1) then
+      write(28,*) IS_HEAD,ncell,nr,no_wr
+      if(IS_HEAD) then
         T_smth(nr)=b_smooth*T_smth(nr)
      &            +a_smooth*dbt(ncell)
         T_head(nr,no_wr)=mu(nr)
      &            +(alf_Mu(nr)
      &            /(1.+exp(gmma(nr)*(beta(nr)-T_smth(nr))))) 
-        temp(nr,no_wr,0,n1)=T_head(nr,no_wr)
-        temp(nr,no_wr,-1,n1)=T_head(nr,no_wr)
-        temp(nr,no_wr,-2,n1)=T_head(nr,no_wr)
-        temp(nr,no_wr,no_celm(nr,no_wr)+1,n1)
-     &                =temp(nr,no_wr,no_celm(nr,no_wr),n1)
       else
         nwr_1 = no_wr-1
-        if (no_wr .eq. 2) write(28,*) 'Upstream ',nr,nwr_1,nseg
-     &  ,no_celm(nr,nwr_1),n1,n2,temp(nr,no_wr-1,no_celm(nr,no_wr-1),n1)
-        T_head(nr,no_wr) = temp(nr,no_wr-1,no_celm(nr,no_wr-1),n1)
-        temp(nr,no_wr,0,n1)=T_head(nr,no_wr)
-        temp(nr,no_wr,-1,n1)=T_head(nr,no_wr)
-        temp(nr,no_wr,-2,n1)=T_head(nr,no_wr)
-        temp(nr,no_wr,no_celm(nr,no_wr)+1,n1)
-     &                =temp(nr,no_wr,no_celm(nr,no_wr),n1)
+        T_head(nr,no_wr) = temp(nr,nwr_1,no_celm(nr,nwr_1),n1)
       end if
-      if (no_wr .eq. 2) write(28,*)
+c        
+      temp(nr,no_wr,0,n1)=T_head(nr,no_wr)
+      temp(nr,no_wr,-1,n1)=T_head(nr,no_wr)
+      temp(nr,no_wr,-2,n1)=T_head(nr,no_wr)
+      temp(nr,no_wr,no_celm(nr,no_wr)+1,n1)
+     &     =temp(nr,no_wr,no_celm(nr,no_wr),n1)
       return
       end
 c
@@ -1080,10 +1134,15 @@ C
       RETURN
       END
 c
-      REAL FUNCTION DENSITY(T)
-         DENSITY = ((((6.536332E-9*T-1.120083E-6)*T+1.001685E-4)
-     &           * T-909529E-3)*T+6.793952E-2)*T+0.842594
-         DENSITY = DENSITY + 999.0
+      INTEGER FUNCTION NLAYER(T1,T2)
+         DENSITY1 = ((((6.536332E-9*T1-1.120083E-6)*T1+1.001685E-4)
+     &           * T1-909529E-3)*T1+6.793952E-2)*T1+0.842594
+         DENSITY1 = DENSITY1 + 999.0
+         DENSITY2 = ((((6.536332E-9*T2-1.120083E-6)*T2+1.001685E-4)
+     &           * T2-909529E-3)*T2+6.793952E-2)*T2+0.842594
+         DENSITY2 = DENSITY2 + 999.0
+         NLAYER = 1
+         IF (DENSITY2 .GT. DENSITY1) NLAYER = 2
       RETURN
       END   
 
