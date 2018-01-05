@@ -108,14 +108,12 @@ c     Read the starting and ending times and the number of
 c     periods per day of weather data from the forcing file
 c 
 c 
-      read(30,*) start_time,end_time,nwpd,nd_start
+      read(30,*) start_time,end_time,nwpp,nd_start
 c
-c Kludge here for averaged forcing 
-C
-      nwpd = 1
-      write(*,*) start_time,'  ',end_time,nwpd,nd_start
+      write(*,*) start_time,'  ',end_time,nwpp,nd_start
 c 
-      write(*,*) 'Number of simulations per day - ',nwpd
+      write(*,*) 'Number of simulations per day, DD_min, UU_min - '
+      read(*,*) nwpd,DD_min,UU_min
 c
       read(start_time,'(i4,2i2,1x,i2)') start_year,start_month
      &                                 ,start_day,start_hour
@@ -368,7 +366,8 @@ c
       time=year+day_fract+hr_fract
 c
 c     Year loop starts
-      end_year = start_year + 4
+c
+c
       do nyear=start_year,end_year
          write(*,*) ' Simulation Year - ',nyear
          nd_year=365
@@ -481,7 +480,7 @@ c
   950 return
       end
       SUBROUTINE ENERGY
-     &           (TSURF,QSURF,A,B,ncell)
+     &           (Tsurf,Qsurf,wind_fctr,A,B,ncell)
       REAL*4 Ksw,LVP
       real*4 q_fit(2),T_fit(2),evrate
       INCLUDE 'RBM.fi'
@@ -491,8 +490,10 @@ c      data evrate/1.5e-9/,pf/0.640/
 c     
       td=nd
       evap_rate=EVRATE
-      T_fit(1)=tsurf-0.5
-      T_fit(2)=tsurf+0.5
+      T_fit(1) = Tsurf-1.0
+      T_fit(2) = Tsurf+1.0
+      if (T_fit(1) .lt. 0.50) T_fit(1) = 0.50
+      if (T_fit(2) .lt. 0.50) T_fit(2) = 1.00
       do i=1,2
          T_kelvin = T_fit(i) + 273.0
 c
@@ -506,7 +507,7 @@ c Latent heat of vaporization
          lvp=1.91846e06*(T_kelvin/(T_kelvin-33.91))**2
 c
 c Evaporative heat flux
-         QEVAP=rho*lvp*evap_rate*WIND(ncell)
+         QEVAP=wind_fctr*rho*lvp*evap_rate*WIND(ncell)
          if(qevap.lt.0.0) qevap=0.0
 c
 c Convective heat flux
@@ -536,19 +537,19 @@ c
      .     ,ndltp(4),nterp(4)
       logical DONE,pp_T
       real*4 xa(4),ta(4)
-      real*4 lat_flow
+      real*4 Kappa_bed,lat_flow
       real*4 dt_part(2000),x_part(2000)
       INCLUDE 'RBM.fi'
       data ndltp/-2,-1,-2,-2/,nterp/4,3,2,3/
 c      data pi/3.14159/,rfac/304.8/
-      parameter (PI=3.14159,RFAC=4.184e6)
+      parameter (PI=3.14159,RFAC=4.184e6,wind_fctr = 1.0)
 c
       l_cell = 0
 c
       do nc=1,cells_wr(nr,no_wr)
         l_cell = l_cell+1
         nseq  = nseq + 1
-        read(30,*) ntemp,l1
+        read(30,*) l1
      &                    ,press(nseq),dbt(nseq)
      &                    ,qna(nseq),qns(nseq)
      &                    ,ea(nseq),wind(nseq)
@@ -634,6 +635,8 @@ c
             x_part(ns)=x_head
             dt_part(ns)=dt(segment_cell(nr,no_wr,nx_part))
             dt_total=dt_total+dt_part(ns)
+            if (ncell .eq. 294) write(23,*) 'US_boundary '
+     &      ,ns,nx_part,x_head,dt_total
             go to 200
           end if
 c
@@ -754,14 +757,26 @@ c
 c
 c Calculate the transfer of energy across the air-water interface
 c
-          call energy(t0,QSURF,A,B,nncell)
+          call energy(t0,QSURF,wind_fctr,A,B,nncell)
 
-          t_eq=-B/A
-          qdot=qsurf/(z*rfac)
-          dt_calc=dt_part(nm)
+          Kappa_bed = 0.0
+          T_bed = 7.5
+          T_eq=-B/A
+          if (T_eq .lt. 0.0) T_eq = 0.0
+          Rate_eq = -A
+c          dt_calc=dt_part(nm)
           dt_total=dt_total+dt_calc
+          dvsr = 1.0/(z*rfac)
+          alpha_1 = Rate_eq*dvsr
+          alpha_2 = Kappa_bed*dvsr
+          t00 = t0+qdot*dt_calc
+          T0  = ((alpha_1*T_eq + alpha_2*T_bed)
+     &       *(1.0-exp(-(alpha_1+alpha_2)*dt_calc))
+     &       /(alpha_1+alpha_2)) + T0*exp(-(alpha_1+alpha_2)*dt_calc)
+c          qbed = 7.0*(t0 - 7.5)
+c          qdot=(qsurf - qbed)/(z*rfac) 
+c          qdot=(qsurf)/(z*rfac) 
           t00 = t0
-          t0=t0+qdot*dt_calc
           qd_calc = qdot*dt_calc 
           if(t0.lt.0.0) t0=0.0
  400      continue
@@ -781,14 +796,15 @@ c
             end do
             DONE=.TRUE.
           end do
+          t0 = (q1*t0 + Q_advct)/q2
           lat_flow = qout(nncell) - q2
-          if (lat_flow.gt.0) then
+c          if (lat_flow.gt.0) then
 c
 c  Modified nonpoint source temperature so as to be the same
 c  as the instream simulated temperature for Connecticut River 7/2015
-            T_dist=t0
-            Q_advct = Q_advct + lat_flow*T_dist
-          end if
+c            T_dist=t0
+c            Q_advct = Q_advct + lat_flow*T_dist
+c          end if
  500      continue
 c
 
@@ -827,8 +843,8 @@ c Write output to unit 20
 c
         write(20,'(f11.5,i5,1x,2i4,1x,4i5,1x,5f7.2,f9.2,f9.1)') 
      &                  time,nyear_out,ndout,ndd,no_wr,ncell,ns,nseg
-     &                 ,t0,T_head(nr,no_wr),dbt(ncell)
-     &                 ,depth(ncell),u(ncell),qout(ncell),qsw_out
+     &                 ,t0,T_head(nr,no_wr),T_eq
+     &                 ,depth(ncell),u(ncell),qout(ncell),qd_calc
 c                     end if
 c
 c 
@@ -868,11 +884,11 @@ c
       INCLUDE 'RBM.fi'
       SAVE T_res
       data Pi/3.1415927/,rho_cp/4.186e06/,cuft_cum/0.028318/
+     &     wind_fctr/1.0/
 c
 c Find the input temperature
 c
       call HEAD_TEMP (nseq+1,nr,no_wr)
- 
 c
 c Initialize  reservoir properties
 c
@@ -899,6 +915,7 @@ c
       q_in_res(:) = 0.0
       T_in(:) = 0.0
 c
+      nsq_1 = nseq + 1
       layer = NLAYER(T_inflow,T_epi)
       T_in(layer)     = T_inflow
       q_in_res(layer) = q_inflow
@@ -933,15 +950,19 @@ c
 c
 c Read the forcing file
 c
-        read(30,*) ntemp,l1
+        read(30,*) l1
      &                    ,press(nseq),dbt(nseq)
      &                    ,qna(nseq),qns(nseq)
      &                    ,ea(nseq),wind(nseq)
      &                    ,qin(nseq),qout(nseq)
 c
+      if (l1 .ne. nseq) then
+        write(*,*) 'Forcing file error at l1 = ',l1,' nseq = ',nseq
+      end if
+c
 c Call energy budget routine
 c
-        Call ENERGY(T_epi,Q_surface,A,B,nseq)
+        Call ENERGY(T_epi,Q_surface,wind_fctr,A,B,nseq)
         Q_netsurf = Q_netsurf
      &            + a_surf(res_nn,res_seg,1)*Q_surface/rho_cp
 c
@@ -987,7 +1008,8 @@ c
 c Reservoir outflows are based on the results from the last reservoir cell
 c
         q_out_res(1) = 0.0
-        q_out_res(2) = q_in_res(1) + q_in_res(2) + q_tmp
+        q_vert = q_in_res(1) - q_out_res(1) + q_tmp
+        q_out_res(2) = q_vert + q_in_res(2) + q_tmp
         q_total =  q_out_res(1) + q_out_res(2)
 c
         TT_head = T_head(nr,no_wr)
@@ -997,7 +1019,7 @@ c Calculate residence time
 c
         res_time = Vol_sum(1)/(86400.*q_total)
           q_vert = q_in_res(1)
-        if (res_time .gt. 2.0000) then     
+c        if (res_time .gt. 2.0000) then     
 c
 c Hypolimnion
 c
@@ -1008,46 +1030,44 @@ c
      &          + Q_advect(2) + Q_advct_trb(2)
      &          - q_out_res(2)*T_res(res_nn,2,n1))/ Vol_sum(2))
      &        * dt_comp 
-         a1 = T_res(res_nn,2,n1)
-         a2 = q_vert*T_res(res_nn,1,n1)*dt_comp/Vol_sum(2)
-         a3 = Q_advect(2)*dt_comp/Vol_sum(2)
-         a4 = Q_advct_trb(2)*dt_comp/Vol_sum(2)
-         a5 = -q_out_res(2)*T_res(res_nn,2,n1)*dt_comp/Vol_sum(2)
-         a6 = T_res(res_nn,2,n2)
-          if (T_res(1,2,n2) .lt. 0.0) T_res(1,2,n2) = 0.0
+c         a3 = T_res(res_nn,2,n1)
+c         a2 = q_vert*T_res(res_nn,1,n1)*dt_comp/Vol_sum(2)
+c         a3 = Q_advect(2)*dt_comp/Vol_sum(2)
+c         a4 = Q_advct_trb(2)*dt_comp/Vol_sum(2)
+c         a5 = -q_out_res(2)*T_res(res_nn,2,n1)*dt_comp/Vol_sum(2)
+c         a4 = T_res(res_nn,2,n2)
+         if (T_res(1,2,n2) .lt. 0.0) T_res(1,2,n2) = 0.0
 !
 ! Epilimnion
 !
           T_res(res_nn,1,n2) = T_res(res_nn,1,n1) 
      &         + ((Q_netsurf 
      &         +  Q_advect(1) + Q_advct_trb(1)
-     &         - q_out_res(1)*T_res(res_nn,1,n1))
+     &         - (q_vert + q_out_res(1))*T_res(res_nn,1,n1))
      &        / Vol_sum(1))*dt_comp 
-c         a = Q_netsurf*dt_comp/Vol_sum(1)
-c         a = q_in_res(2)*T_in(2)*dt_comp/Vol_sum(2)
-c         a3 = q_out_res(2)*T_res(res_nn,2,n1)*dt_comp/Vol_sum(2)
-c         a4 = q_in_res(1)*T_in(1)*dt_comp/Vol_sum(2)
           if (T_res(res_nn,1,n2) .lt. 0.5) T_res(res_nn,1,n2) = 0.5
+          if (T_res(res_nn,2,n2) .gt. T_res(res_nn,1,n2)) 
+     &        T_res(res_nn,2,n2) = T_res(res_nn,1,n2)
 c
 c
 c
           T_out = (q_out_res(1)*T_res(res_nn,1,n2) 
      &          +  q_out_res(2)*T_res(res_nn,2,n2)) / q_total
+         a1 = q_out_res(1)
+         a2 = T_res(res_nn,1,n2)    
+         a3 = q_out_res(2)
+         a4 = T_res(res_nn,2,n2)
+         a5 = q_total
+         a6 = T_out    
+         if (res_nn .eq. 4) write(25,*) ,time,nseq,res_nn,dbt(nseq),a2
+     &                                  ,a4,a6
 c
 c NSEG = 1 for this reservoir model, since there is only one reservoir
 c 
           nseg = no_celm(nr,no_wr)
-        else 
-          Vol_total = Vol_sum(1) +Vol_sum(2)
-          Qres_sum = Q_netsurf*dt_comp/Vol_total
-          T_res(res_nn,1,n2) = T_res(res_nn,1,n1) + Qres_sum
-          T_res(res_nn,2,n2) = T_res(res_nn,2,n1)
-          T_out = T_res(res_nn,1,n2)
-        end if
-        Q1_advect=Q_advect(1)*dt_comp/Vol_sum(1)
-        Q2_advect=Q_advect(2)*dt_comp/Vol_sum(2)
 c
-        temp(nr,no_wr,nseg,n2) = T_out
+        nnseg = 1
+        temp(nr,no_wr,nnseg,n2) = T_out
 
         write(20,'(f11.5,i5,1x,2i4,1x,4i5,1x,5f7.2,f9.1,f9.1)') 
      &                       time,nyear,nd,ndd,no_wr,nseq,res_nn,nseg

@@ -13,6 +13,9 @@ C
       COMMON/BLOCK2/a_smooth,b_smooth,dt_comp
      &             ,QSUM,time,temp_init
      &             ,XTITLE,ysim,delta_n
+c
+c Temporary addition for testing
+     &             ,DD_min,UU_min
 C
 C    Dimensioned integer variables
 C
