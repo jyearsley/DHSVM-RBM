@@ -326,15 +326,6 @@ c
       hour_inc=1./nwpd
       T_head(:,:) = 0.0
       T_smth(:)   = 0.0
-c      do nr=1,500
-c        T_smth(nr)=mu(nr)
-c        do nn_res = 1,20
-c          res_nn(nr,nn_res) = 0
-c        end do
-c        do no_wr = 1,10
-c          T_head(nr,no_wr)=mu(nr)
-c        end do
-c      end do
 c
       n1=1
       n2=2
@@ -635,8 +626,6 @@ c
             x_part(ns)=x_head
             dt_part(ns)=dt(segment_cell(nr,no_wr,nx_part))
             dt_total=dt_total+dt_part(ns)
-            if (ncell .eq. 294) write(23,*) 'US_boundary '
-     &      ,ns,nx_part,x_head,dt_total
             go to 200
           end if
 c
@@ -737,8 +726,8 @@ c
 c     Call the interpolation function
 c
 
-          t0=tntrp(xa,ta,x,nterp(npndx))
-          ttrp=t0
+          T0=tntrp(xa,ta,x,nterp(npndx))
+          ttrp=T0
 c
 c End of headwaters or interpolation block
 c
@@ -764,18 +753,12 @@ c
           T_eq=-B/A
           if (T_eq .lt. 0.0) T_eq = 0.0
           Rate_eq = -A
-c          dt_calc=dt_part(nm)
           dt_total=dt_total+dt_calc
           dvsr = 1.0/(z*rfac)
           alpha_1 = Rate_eq*dvsr
           alpha_2 = Kappa_bed*dvsr
-          t00 = t0+qdot*dt_calc
-          T0  = ((alpha_1*T_eq + alpha_2*T_bed)
-     &       *(1.0-exp(-(alpha_1+alpha_2)*dt_calc))
-     &       /(alpha_1+alpha_2)) + T0*exp(-(alpha_1+alpha_2)*dt_calc)
-c          qbed = 7.0*(t0 - 7.5)
-c          qdot=(qsurf - qbed)/(z*rfac) 
-c          qdot=(qsurf)/(z*rfac) 
+          qdot=(qsurf)/(z*rfac) 
+          T0 = T0+qdot*dt_calc
           t00 = t0
           qd_calc = qdot*dt_calc 
           if(t0.lt.0.0) t0=0.0
@@ -843,7 +826,7 @@ c Write output to unit 20
 c
         write(20,'(f11.5,i5,1x,2i4,1x,4i5,1x,5f7.2,f9.2,f9.1)') 
      &                  time,nyear_out,ndout,ndd,no_wr,ncell,ns,nseg
-     &                 ,t0,T_head(nr,no_wr),T_eq
+     &                 ,t0,T_head(nr,no_wr),dbt(ncell)
      &                 ,depth(ncell),u(ncell),qout(ncell),qd_calc
 c                     end if
 c
@@ -858,9 +841,7 @@ c
 c Reset NSEG back one for the next water resource unit
 c
       nseg = ns
-c      ntmp=n1
-c      n1=n2
-c      n2=ntmp
+c
       RETURN
       END
 c
@@ -956,9 +937,6 @@ c
      &                    ,ea(nseq),wind(nseq)
      &                    ,qin(nseq),qout(nseq)
 c
-      if (l1 .ne. nseq) then
-        write(*,*) 'Forcing file error at l1 = ',l1,' nseq = ',nseq
-      end if
 c
 c Call energy budget routine
 c
@@ -1030,12 +1008,6 @@ c
      &          + Q_advect(2) + Q_advct_trb(2)
      &          - q_out_res(2)*T_res(res_nn,2,n1))/ Vol_sum(2))
      &        * dt_comp 
-c         a3 = T_res(res_nn,2,n1)
-c         a2 = q_vert*T_res(res_nn,1,n1)*dt_comp/Vol_sum(2)
-c         a3 = Q_advect(2)*dt_comp/Vol_sum(2)
-c         a4 = Q_advct_trb(2)*dt_comp/Vol_sum(2)
-c         a5 = -q_out_res(2)*T_res(res_nn,2,n1)*dt_comp/Vol_sum(2)
-c         a4 = T_res(res_nn,2,n2)
          if (T_res(1,2,n2) .lt. 0.0) T_res(1,2,n2) = 0.0
 !
 ! Epilimnion
@@ -1053,14 +1025,6 @@ c
 c
           T_out = (q_out_res(1)*T_res(res_nn,1,n2) 
      &          +  q_out_res(2)*T_res(res_nn,2,n2)) / q_total
-         a1 = q_out_res(1)
-         a2 = T_res(res_nn,1,n2)    
-         a3 = q_out_res(2)
-         a4 = T_res(res_nn,2,n2)
-         a5 = q_total
-         a6 = T_out    
-         if (res_nn .eq. 4) write(25,*) ,time,nseq,res_nn,dbt(nseq),a2
-     &                                  ,a4,a6
 c
 c NSEG = 1 for this reservoir model, since there is only one reservoir
 c 
