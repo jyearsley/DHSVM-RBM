@@ -6,6 +6,7 @@ C
      & ,n1,n2,nwpd,nd,ndd,nd_start
      & ,start_year,start_month,start_day,start_hour
      & ,end_year,end_month,end_day,end_hour
+     & , jjl_day,nnl_rch,nlong
 
 C_flow
 C     UNDIMENSIONED FLOATING POINT VARIABLES

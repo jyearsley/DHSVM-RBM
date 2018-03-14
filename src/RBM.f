@@ -108,12 +108,9 @@ c     Read the starting and ending times and the number of
 c     periods per day of weather data from the forcing file
 c 
 c 
-      read(30,*) start_time,end_time,nwpp,nd_start
+      read(30,*) start_time,end_time,nwpd,nd_start
 c
-      write(*,*) start_time,'  ',end_time,nwpp,nd_start
-c 
-      write(*,*) 'Number of simulations per day, DD_min, UU_min - '
-      read(*,*) nwpd,DD_min,UU_min
+      write(*,*) start_time,'  ',end_time,nwpd,nd_start
 c
       read(start_time,'(i4,2i2,1x,i2)') start_year,start_month
      &                                 ,start_day,start_hour
@@ -198,7 +195,7 @@ c
           ncell=ncell+1
           read(50,*) ncll,U_a(ncell),U_b(ncell),U_min(ncell)
           if (ncll .ne.ncell) then
-            write(*,*) 'Mismatch in Leopold file'
+            write(*,*) 'Mismatch in Leopold file',ncll,ncell
           end if  
           read(50,*) D_a(ncell),D_b(ncell),D_min(ncell)
 
@@ -532,7 +529,8 @@ c
       real*4 dt_part(2000),x_part(2000)
       INCLUDE 'RBM.fi'
       data ndltp/-2,-1,-2,-2/,nterp/4,3,2,3/
-c      data pi/3.14159/,rfac/304.8/
+c
+      parameter (ft_to_km = 1./(3.2808*1000.))
       parameter (PI=3.14159,RFAC=4.184e6,wind_fctr = 1.0)
 c
       l_cell = 0
@@ -813,27 +811,31 @@ c
         time=year+(day-1.+hour_inc*period)/xd_year
         if (ndd .eq. nwpd)then
           time=year + day/xd_year
-          ndout = nd + 1
+          ndout = nd
           if (nd .eq.nd_year) then
             ndout = 1
             nyear_out=nyear+1
           end if
         end if
         qsw_out=qns(ncell)
-        rmile_plot=x_dist(nr,no_wr,ns)/5280.
+        xkm_plot=AMAX1(0.001,x_dist(nr,no_wr,ns)*3.048e-04)
 c
 c Write output to unit 20
 c
-        write(20,'(f11.5,i5,1x,2i4,1x,4i5,1x,5f7.2,f9.2,f9.1)') 
-     &                  time,nyear_out,ndout,ndd,no_wr,ncell,ns,nseg
-     &                 ,t0,T_head(nr,no_wr),dbt(ncell)
-     &                 ,depth(ncell),u(ncell),qout(ncell),qd_calc
-c                     end if
+        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.2,f9.1)') 
+     &             time,nyear_out,ndout,ndd,nr,no_wr,ncell,ns,nseg
+     &            ,t0,T_head(nr,no_wr),dbt(ncell)
+     &            ,depth(ncell),u(ncell),qout(ncell),xkm_plot
 c
-c 
-c Update NSEG
+c  write output for longitudinal plots, if requested
 c
-
+c        if (ndout .eq. jjl_day .and. nr .eq. nnl_rch) then
+c          xll_dist = x_dist(nr,no_wr,ns)*ft_to_km
+c          nll_unit = 70
+c          write(nll_unit,'(4i5,f10.3,f10.2)') 
+c     &          nyear,jjl_day,ncell,nseg,xll_dist,T0
+c        end if
+c
 c     End of computational element loop
 c
       end do
@@ -1032,13 +1034,13 @@ c
 c
         nnseg = 1
         temp(nr,no_wr,nnseg,n2) = T_out
-
-        write(20,'(f11.5,i5,1x,2i4,1x,4i5,1x,5f7.2,f9.1,f9.1)') 
-     &                       time,nyear,nd,ndd,no_wr,nseq,res_nn,nseg
-     &                      ,T_out,T_head(nr,no_wr),dbt(nseq)
-     &                      ,T_res(res_nn,1,n2),T_res(res_nn,2,n2)
-     &                      ,qin(nseq),res_time
-c
+        xkm_plot=x_dist(nr,no_wr,nseg)*3.048e-04
+        if (nr .eq. 160) xkm_plot    = 92.
+        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.1,2f9.1)') 
+     &             time,nyear,nd,ndd,nr,no_wr,nseq,res_nn,nseg
+     &            ,T_out,T_head(nr,no_wr),dbt(nseq)
+     &            ,T_res(res_nn,1,n2),T_res(res_nn,2,n2)
+     &            ,qin(nseq),xkm_plot,res_time
 c      ntmp=n1
 c      n1=n2
 c      n2=ntmp
