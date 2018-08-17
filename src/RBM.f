@@ -218,6 +218,7 @@ c
 c
 c Set reservior indices and geometry
 c
+          
           if (upstrm_cell(nrch,no_wru) .lt. 0) then
             upstrm_cell( nrch,no_wru) = ncell-1
           end if
@@ -300,6 +301,7 @@ c  500	continue
       nrch= nreach
       xwpd=nwpd
       dt_comp=86400./xwpd
+      close(84)
 C
 C     ******************************************************
 C                         Return to RMAIN
@@ -408,6 +410,7 @@ c
 c
 c Select either the RIVER or RSRVR case
 c
+c
                Select Case(unit_type(nrch,no_wr))
                  case('RIVER')
                    call RIVER(nseg,nseq,nr,no_wr)
@@ -470,14 +473,18 @@ c
       SUBROUTINE ENERGY
      &           (Tsurf,Qsurf,wind_fctr,A,B,ncell)
       REAL*4 Ksw,LVP
-      real*4 q_fit(2),T_fit(2),evrate
+      real*4 q_fit(2),T_fit(2),evrte(2),evrate
       INCLUDE 'RBM.fi'
-c      data evrate/1.5e-9/,pf/0.640/
+      data evrte/1.50e-11,0.75e-11/,pf/0.640/
       parameter (pi=3.14159)
       parameter (P_FCTR=64.0,RHO=1000.,EVRATE=1.5e-11)
 c     
       td=nd
-      evap_rate=EVRATE
+c
+c Testing effect of hysteresis with output as Farmington_3  4/2/2018
+c
+      evap_rate=evrte(1)
+      if (nd > 180) evap_rate=evrte(2)
       T_fit(1) = Tsurf-1.0
       T_fit(2) = Tsurf+1.0
       if (T_fit(1) .lt. 0.50) T_fit(1) = 0.50
@@ -552,7 +559,10 @@ c Find the headwaters temperature
 c
       nc_head=upstrm_cell(nr,no_wr)
       if(nseq .eq. nc_head+1) then
-        call HEAD_TEMP (nseq,nr,no_wr)
+        call HEAD_TEMP (ncell,nr,no_wr)
+c      if (nr.eq.95) write(72,*) nd,nr,no_wr,ncell,nseq
+c     &              ,dbt(ncell),T_head(nr,no_wr) 
+c      if (nr .eq. 95) write(72,*)             
       end if
 c
 c Average flow in segment for estimating hydraulic conditions
@@ -586,6 +596,10 @@ c     Flows are cumulative and do not include tributaries if
 c     tributaries are downstream of the inflow junction
 c
       end do
+c
+c Temporary fix to the shortwave radiation in Segment 236  JRY 7/3/2018
+c
+      qns(236) = qns(237)
 c
 c Temporary method for fixing headwaters location - best done in Begin.f90
 c 
@@ -822,10 +836,10 @@ c
 c
 c Write output to unit 20
 c
-        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.2,f9.1)') 
+        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.2,2f9.1)') 
      &             time,nyear_out,ndout,ndd,nr,no_wr,ncell,ns,nseg
      &            ,t0,T_head(nr,no_wr),dbt(ncell)
-     &            ,depth(ncell),u(ncell),qout(ncell),xkm_plot
+     &            ,depth(ncell),u(ncell),qout(ncell),xkm_plot,qsw_out
 c
 c  write output for longitudinal plots, if requested
 c
