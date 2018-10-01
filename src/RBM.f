@@ -2,7 +2,7 @@ c
 c      PROGRAM RMAIN
 C
 C     Dynamic river basin model for simulating water quality in
-C     branching river systems with freely-flowing river segments. 
+C     branching river systems with freely-flowing river sfegments. 
 c
 c     This version uses Reverse Particle Tracking in the Lagrangian
 c     mode and Lagrangian interpolation in the Eulerian mode.
@@ -233,6 +233,7 @@ c If this is a reservoir, update reservoir index
 c
             if (wr_type .eq. 'RSRVR') then
               no_res = no_res + 1
+              write(81,*) 'Reservoir _Number ',no_res
               res_seg = 0
             end if
 c
@@ -395,7 +396,10 @@ c
              ipd=ndd
              day=nd
              period=ndd
-             time=year+(day-1.+hour_inc*period)/xd_year
+             hour_inc = 3.*(period - 0.5)/24.
+             time = (day - 1.)/xd_year
+             time = time + hour_inc/xd_year
+             time = year + time
 c
 c Initialize number of reservoirs (index is basin-wide)
 c
@@ -822,7 +826,7 @@ c   Write file 20 with all temperature output 11/19/2008
 c 
         ndout=nd
         nyear_out=nyear
-        time=year+(day-1.+hour_inc*period)/xd_year
+c        time=year+(day-1.+hour_inc*period)/xd_year
         if (ndd .eq. nwpd)then
           time=year + day/xd_year
           ndout = nd
@@ -867,7 +871,7 @@ c
 c
 c Reservoir inlows and advected thermal energy
 c
-      real*4 q_in_res(2),q_out_res(2)
+      real*4 q_in_res(2),q_out_res(2),q_in_trb(2),q_vert(2)
       real*4 T_in(2),T_res(500,2,2),Q_advect(2)
 
 !
@@ -982,11 +986,16 @@ c
             DONE=.TRUE.
           end do
 c
-c Add the advected thermal energy from the tributaries in this cell
+c Add the advected flow and thermal energy from the tributaries in this cell
 c
           T_tmp = T_tmp/q_tmp
+          q_in_trb(:)    = 0.0
           Q_advct_trb(:) = 0.0
           layer = NLAYER(T_tmp,T_epi)
+c
+c Place flow and thermal energy in composited layer
+c
+          q_in_trb(layer)    = q_tmp
           Q_advct_trb(layer) = Q_advct_sum
 c
 c Calculate residence time
@@ -1000,10 +1009,23 @@ c
       end do
 c
 c Reservoir outflows are based on the results from the last reservoir cell
+c At present (Farmington River paper) Reservoirs Nepaug (1), Barkhamstead (2) and 
+c Lake McDonough (3) are run-of-the-river and assumed to release water from the
+c surface layer (epilimnion). Only Colebrook Lake, which generates hydropower is 
+c assumed to release water from the hypolimnion
 c
+      if (res_nn .le. 3) then
+        q_out_res(1) = q2
+        q_out_res(2) = 0.0
+      else
         q_out_res(1) = 0.0
-        q_vert = q_in_res(1) - q_out_res(1) + q_tmp
-        q_out_res(2) = q_vert + q_in_res(2) + q_tmp
+        q_out_res(2) = q2
+      end if 
+c
+	q_vert(:) = 0.0
+        q_vert(1) = q_out_res(1) - (q_in_res(1) + q_in_trb(1))
+        q_vert(2) = q_out_res(2) - (q_in_res(2) + q_in_trb(2))
+c
         q_total =  q_out_res(1) + q_out_res(2)
 c
         TT_head = T_head(nr,no_wr)
@@ -1012,7 +1034,7 @@ c
 c Calculate residence time
 c
         res_time = Vol_sum(1)/(86400.*q_total)
-          q_vert = q_in_res(1)
+          q_vert_epi = q_in_res(1) - q_out
 c        if (res_time .gt. 2.0000) then     
 c
 c Hypolimnion
@@ -1020,18 +1042,19 @@ c
 
 c
           T_res(res_nn,2,n2) = T_res(res_nn,2,n1)
-     &          + ((q_vert*T_res(res_nn,1,n1) 
+     &          + ((q_vert(2)*T_res(res_nn,1,n1) 
      &          + Q_advect(2) + Q_advct_trb(2)
-     &          - q_out_res(2)*T_res(res_nn,2,n1))/ Vol_sum(2))
-     &        * dt_comp 
+     &          - (q_vert(1) + q_out_res(2))*T_res(res_nn,2,n1))
+     &          / Vol_sum(2))* dt_comp 
          if (T_res(1,2,n2) .lt. 0.0) T_res(1,2,n2) = 0.0
 !
 ! Epilimnion
 !
           T_res(res_nn,1,n2) = T_res(res_nn,1,n1) 
-     &         + ((Q_netsurf 
+     &         + ((Q_netsurf
+     &         +  q_vert(1)*T_res(res_nn,2,n1) 
      &         +  Q_advect(1) + Q_advct_trb(1)
-     &         - (q_vert + q_out_res(1))*T_res(res_nn,1,n1))
+     &         - (q_vert(2) + q_out_res(1))*T_res(res_nn,1,n1))
      &        / Vol_sum(1))*dt_comp 
           if (T_res(res_nn,1,n2) .lt. 0.5) T_res(res_nn,1,n2) = 0.5
           if (T_res(res_nn,2,n2) .gt. T_res(res_nn,1,n2)) 
@@ -1041,6 +1064,9 @@ c
 c
           T_out = (q_out_res(1)*T_res(res_nn,1,n2) 
      &          +  q_out_res(2)*T_res(res_nn,2,n2)) / q_total
+      write(59+res_nn,*) 'Reservoir ',res_nn,time,T_out
+     &  ,T_res(res_nn,1,n2), T_res(res_nn,2,n2)
+c    
 c
 c NSEG = 1 for this reservoir model, since there is only one reservoir
 c 
