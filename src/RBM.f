@@ -994,7 +994,12 @@ c
           T_tmp = T_tmp/q_tmp
           q_in_trb(:)    = 0.0
           Q_advct_trb(:) = 0.0
-          layer = NLAYER(DENSITY1,DENSITY2,T_tmp,T_epi)
+c
+c Place reservoir inflow
+c
+          layer = 1
+          call DENSE(DENSITY1,DENSITY2,T_tmp,T_epi)
+          if (DENSITY1 .gt. DENSITY2) layer = 2
 c
 c Place flow and thermal energy in composited layer
 c
@@ -1214,16 +1219,35 @@ C
       RETURN
       END
 c
-      INTEGER FUNCTION NLAYER(DENSITY1,DENSITY2,T1,T2)
+      SUBROUTINE DENSE(DENSITY1,DENSITY2,T1,T2)
          DENSITY1 = ((((6.536332E-9*T1-1.120083E-6)*T1+1.001685E-4)
      &           * T1-909529E-3)*T1+6.793952E-2)*T1+0.842594
          DENSITY2 = ((((6.536332E-9*T2-1.120083E-6)*T2+1.001685E-4)
      &           * T2-909529E-3)*T2+6.793952E-2)*T2+0.842594
-         NLAYER = 1
-         IF (DENSITY2 .GT. DENSITY1) NLAYER = 2
+c
       RETURN
-      END   
+      END
+c
+      REAL FUNCTION KAPPA_Z(T_EPI,T_HYP)
+c
+c   
+        PARAMETER (FACTOR = -1.96E-03)
+c
+c FACTOR = -G/(RHO_H2O*DEPTH_APPROX)
+c      G = 9.8 meters**2/sec; RHO_H2O = 1000.0 kg/meter**3; DEPTH_APPROX = 5.0 meters
+c
+        CALL DENSE (RHO_EPI,RHO_HYP,T_EPI,T_HYP)
+        BRUNT = FACTOR*(RHO_EPI-RHO_HYP)
+c
+        DIFF = -1.96E-03*BRUNT
+c
+c Estimate the vertical eddy diffusivity using the method of Quay et al (1980)
+c
+        KAPPA_Z = AMAX1(1.0E-06,DIFF)
+      RETURN
+      END
 
+      
 
 
 
