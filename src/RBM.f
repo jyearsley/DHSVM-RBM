@@ -214,7 +214,7 @@ C
 c
           unit_type(nrch,no_wru) = wr_type
 c
-        
+c        
 c
 c Set reservior indices and geometry
 c
@@ -479,7 +479,7 @@ c
       REAL*4 Ksw,LVP
       real*4 q_fit(2),T_fit(2),evrte(2),evrate
       INCLUDE 'RBM.fi'
-      data evrte/1.50e-11,0.75e-11/,pf/0.640/
+      data evrte/1.5e-11,0.75e-11/,pf/0.640/
       parameter (pi=3.14159)
       parameter (P_FCTR=64.0,RHO=1000.,EVRATE=1.5e-11)
 c     
@@ -768,7 +768,8 @@ c
 c
 c Bed conduction
 c
-          q_sed = rho_sed*Cps*alpha_s*(T_sed - T0)/H_sed
+c          q_sed = rho_sed*Cps*alpha_s*(T_sed - T0)/H_sed
+          q_sed = 0.0
           dt_total=dt_total+dt_calc
           dvsr = 1.0/(z*rfac)
           alpha_1 = Rate_eq*dvsr
@@ -842,11 +843,11 @@ c        time=year+(day-1.+hour_inc*period)/xd_year
 c
 c Write output to unit 20
 c
-        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,4f9.2,f9.1)') 
+        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,4f9.2,2f9.1)') 
      &             time,nyear_out,ndout,ndd,nr,no_wr,ncell,ns,nseg
      &            ,t0,T_head(nr,no_wr),dbt(ncell)
      &            ,depth(ncell),u(ncell),qin(ncell),q1,q2
-     &            ,lat_flow,xkm_plot
+     &            ,lat_flow,xkm_plot,qsw_out
 c
 c  write output for longitudinal plots, if requested
 c
@@ -876,6 +877,7 @@ c Reservoir inlows and advected thermal energy
 c
       real*4 q_in_res(2),q_out_res(2),q_in_trb(2),q_vert(2)
       real*4 T_in(2),T_res(500,2,2),Q_advect(2)
+      REAL*8 DENSITY1,DENSITY2
 
 !
 ! Reservoir temperatures are saved as T_res(m1,m2,m3,m4)
@@ -885,6 +887,7 @@ c
       logical DONE
       real*4 Area_sum(2),Vol_sum(2)
       real*4 Q_advct_trb(2)
+      real*4 KAPPA_Z
       INCLUDE 'RBM.fi'
       SAVE T_res
       data Pi/3.1415927/,rho_cp/4.186e06/,cuft_cum/0.028318/
@@ -920,7 +923,12 @@ c
       T_in(:) = 0.0
 c
       nsq_1 = nseq + 1
-      layer = NLAYER(DENSITY1,DENSITY2,T_inflow,T_epi)
+c
+c      layer = 1
+c      call DENSE(DENSITY1,DENSITY2,T_inflow,T_epi)
+c      if (DENSITY1 .gt. DENSITY2) layer = 2
+c
+      layer = NLAYER(T_inflow,T_epi)
       T_in(layer)     = T_inflow
       q_in_res(layer) = q_inflow
 c
@@ -933,7 +941,11 @@ c
 c Initialize important reservoir properties
 c
       Q_netsurf    = 0.0
-
+c
+c Vertical eddy diffusivity
+c
+      Q_dff_epi    = 0.0
+      Q_dff_hyp    = 0.0
 c
 c Cycle through the cells (nseq) and segments (NSEG)
 c
@@ -967,6 +979,17 @@ c
         Q_netsurf = Q_netsurf
      &            + a_surf(res_nn,res_seg,1)*Q_surface/rho_cp
 c
+c Vertical eddy diffusivity
+c
+C        eddy_dff = KAPPA_Z(nd,res_nn,T_epi,T_hyp)
+c
+        eddy_dff = 0.0
+c
+        Q_dff_epi = Q_dff_epi 
+     &            + eddy_dff*(T_hyp-T_epi)*a_surf(res_nn,res_seg,1)
+c
+        Q_dff_hyp = Q_dff_hyp 
+     &            + eddy_dff*(T_epi-T_hyp)*a_surf(res_nn,res_seg,2)
 c     Look for a tributary.
 c 
           q1      = cuft_cum*qin(nseq)
@@ -997,9 +1020,10 @@ c
 c
 c Place reservoir inflow
 c
-          layer = 1
-          call DENSE(DENSITY1,DENSITY2,T_tmp,T_epi)
-          if (DENSITY1 .gt. DENSITY2) layer = 2
+c          layer = 1
+c          call DENSE(DENSITY1,DENSITY2,T_tmp,T_epi)
+c          if (DENSITY1 .gt. DENSITY2) layer = 2
+            layer = NLAYER(T_tmp,T_epi)
 c
 c Place flow and thermal energy in composited layer
 c
@@ -1019,7 +1043,7 @@ c
 c Reservoir outflows are based on the results from the last reservoir cell
 c At present (Farmington River paper) Reservoirs Nepaug (1), Barkhamstead (2) and 
 c Lake McDonough (3) are run-of-the-river and assumed to release water from the
-c surface layer (epilimnion). Only Colebrook Lake, which generates hydropower is 
+c surface layer (epilimnion). Only Colebrook Lake and West Branch. which generate hydropower are 
 c assumed to release water from the hypolimnion
 c
       if (res_nn .le. 3) then
@@ -1030,9 +1054,20 @@ c
         q_out_res(2) = q2
       end if 
 c
-	q_vert(:) = 0.0
-        q_vert(1) = q_out_res(1) - (q_in_res(1) + q_in_trb(1))
-        q_vert(2) = q_out_res(2) - (q_in_res(2) + q_in_trb(2))
+c	q_vert(:) = 0.0
+c        q_vert(1) = q_out_res(1) - (q_in_res(1) + q_in_trb(1))
+c        q_vert(2) = q_out_res(2) - (q_in_res(2) + q_in_trb(2))
+c
+c Special case for the Farmington River paper
+c
+         Q_vert(:) = 0.
+         q_v = q_in_res(1) + q_in_trb(1) - q_out_res(1)
+         if (q_v .gt.0.0001) then
+           Q_vert(2) = q_v
+         else
+           Q_vert(1) = -q_v
+         end if
+
 c
         q_total =  q_out_res(1) + q_out_res(2)
 c
@@ -1050,6 +1085,7 @@ c
 
 c
           T_res(res_nn,2,n2) = T_res(res_nn,2,n1)
+     &          + Q_dff_hyp
      &          + ((q_vert(2)*T_res(res_nn,1,n1) 
      &          + Q_advect(2) + Q_advct_trb(2)
      &          - (q_vert(1) + q_out_res(2))*T_res(res_nn,2,n1))
@@ -1060,6 +1096,7 @@ c
 !
           T_res(res_nn,1,n2) = T_res(res_nn,1,n1) 
      &         + ((Q_netsurf
+     &         +  Q_dff_epi
      &         +  q_vert(1)*T_res(res_nn,2,n1) 
      &         +  Q_advect(1) + Q_advct_trb(1)
      &         - (q_vert(2) + q_out_res(1))*T_res(res_nn,1,n1))
@@ -1082,11 +1119,12 @@ c
         temp(nr,no_wr,nnseg,n2) = T_out
         xkm_plot=x_dist(nr,no_wr,nseg)*3.048e-04
         if (nr .eq. 160) xkm_plot    = 92.
-        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.1,2f9.1)') 
+        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.1,2f9.1,3E12.3)') 
      &             time,nyear,nd,ndd,nr,no_wr,nseq,res_nn,nseg
      &            ,T_out,T_head(nr,no_wr),dbt(nseq)
      &            ,T_res(res_nn,1,n2),T_res(res_nn,2,n2)
-     &            ,qin(nseq),xkm_plot,res_time
+     &            ,qin(nseq),xkm_plot,res_time,Q_netsurf
+     &            ,Q_dff_epi,Q_dff_hyp
 c      ntmp=n1
 c      n1=n2
 c      n2=ntmp
@@ -1219,34 +1257,64 @@ C
       RETURN
       END
 c
-      SUBROUTINE DENSE(DENSITY1,DENSITY2,T1,T2)
-         DENSITY1 = ((((6.536332E-9*T1-1.120083E-6)*T1+1.001685E-4)
-     &           * T1-909529E-3)*T1+6.793952E-2)*T1+0.842594
-         DENSITY2 = ((((6.536332E-9*T2-1.120083E-6)*T2+1.001685E-4)
-     &           * T2-909529E-3)*T2+6.793952E-2)*T2+0.842594
+      SUBROUTINE DENSE(DENSITY1,DENSITY2,T11,T22)
+      REAL*8 DENSITY1,DENSITY2,T1,T2
+         T1 = T11
+         T2 = T22
+c
+          DENSITY1 = 6.793952E-02*T1 -9.095290E-03*(T1**2)
+     &             + 1.001685E-04*(T1**3) - 1.120083E-06*(T1**4)
+     &             + 6.536332E-09*(T1**5)
+          DENSITY2 = 6.793952E-02*T2 -9.095290E-03*(T2**2)
+     &             + 1.001685E-04*(T2**3) - 1.120083E-06*(T2**4)
+     &             + 6.536332E-09*(T2**5)
 c
       RETURN
-      END
+      END   
 c
-      REAL FUNCTION KAPPA_Z(T_EPI,T_HYP)
+      REAL FUNCTION KAPPA_Z(nd,res_nn,T_EPI,T_HYP)
+      INTEGER res_nn
+      REAL*8 RHO_EPI,RHO_HYP
 c
 c   
-        PARAMETER (FACTOR = -1.96E-03)
+        PARAMETER (FACTOR = -1.96E-03,FACTOR3 = -9.8E-03,PI = 3.4159)
 c
 c FACTOR = -G/(RHO_H2O*DEPTH_APPROX)
 c      G = 9.8 meters**2/sec; RHO_H2O = 1000.0 kg/meter**3; DEPTH_APPROX = 5.0 meters
 c
         CALL DENSE (RHO_EPI,RHO_HYP,T_EPI,T_HYP)
         BRUNT = FACTOR*(RHO_EPI-RHO_HYP)
+        if (res_nn .eq. 3) then 
+          z_mod = 9.14*SIN(2.*PI*(DDAY-180.)/365.)
+          BRUNT = FACTOR3*(RHO_EPI-RHO_HYP)*z_mod
+        end if
+        BRUNT = AMIN1(BRUNT,1.0E-04)
+        BRUNT = AMAX1(BRUNT,1.0E-02)
 c
-        DIFF = -1.96E-03*BRUNT
+c        KAPPA_Z = 5.6247E-10*(BRUNT**(-0.5028))
+c        KAPPA_Z = 5.6247E-09/BRUNT
+        KAPPA_Z = 5.6247E-09*(BRUNT**(-0.5028))
 c
 c Estimate the vertical eddy diffusivity using the method of Quay et al (1980)
 c
-        KAPPA_Z = AMAX1(1.0E-06,DIFF)
+
       RETURN
       END
-
+      INTEGER FUNCTION NLAYER(T11,T22)
+      REAL*8 DENSITY1,DENSITY2,T1,T2
+         T1 = T11
+         T2 = T22
+c
+          DENSITY1 = 6.793952E-02*T1 -9.095290E-03*(T1**2)
+     &             + 1.001685E-04*(T1**3) - 1.120083E-06*(T**4)
+     &             + 6.536332E-09*(T1**5)
+          DENSITY2 = 6.793952E-02*T2 -9.095290E-03*(T2**2)
+     &             + 1.001685E-04*(T2**3) - 1.120083E-06*(T2**4)
+     &             + 6.536332E-09*(T2**5)
+         NLAYER = 1
+         IF (DENSITY2 .GT. DENSITY1) NLAYER = 2
+      RETURN
+      END        
       
 
 
