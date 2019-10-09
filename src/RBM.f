@@ -14,12 +14,12 @@ c     the University of Washington.
 c
 C     For additional information visit:
 c
-c     http://www.hydro.washington.edu/Lettenmaier/Models/DHSVM/
+c     http://github.com/jyearsley/DHSVM-RBM/tree/reservoir_mod/
 c
 c     or contact:
 c
 C     John Yearsley
-C     Land Surface Hydrology Group
+C     UW Hydro/Computational Hydrology
 C     Dept. of Civil and Environmental Engineering
 C     Box 352700
 C     University of Washington
@@ -258,7 +258,6 @@ c            res_no(nrch,no_wru)   = no_res
      &                 ,x_dist(nrch,no_wru,nseg-1),x_1,x_0,dx(ncell)                        
                     cells_wr(nrch,no_wru) 
      &                   = cells_wr(nrch,no_wru) + 1 
-          write(85,*) 'WRU cells ',nrch,no_wru,cells_wr(nrch,no_wru)     
           else             
             do ncll = 1,ndelta(ncell)
               nseg = nseg + 1
@@ -267,17 +266,10 @@ c            res_no(nrch,no_wru)   = no_res
               dx(ncell)=(x_1-x_0)/ndelta(ncell)
               x_dist(nrch,no_wru,nseg) 
      &        = x_dist(nrch,no_wru,nseg-1)-dx(ncell)
-             write(85,*) wr_type,no_wru,nseg
-     &                 ,upstrm_cell(nrch,no_wru)
-     &                 ,ncell,cells_wr(nrch,no_wru)
-     &                 ,segment_cell(nrch,no_wru,nseg)
-     &                 ,x_dist(nrch,no_wru,nseg)
-     &                 ,x_dist(nrch,no_wru,nseg-1),x_1,x_0,dx(ncell)                        
            end do
 c
            cells_wr(nrch,no_wru) 
      &                   = cells_wr(nrch,no_wru) + 1 
-           write(85,*) 'WRU cells ',nrch,no_wru,cells_wr(nrch,no_wru)     
           end if
           
                    
@@ -287,8 +279,6 @@ c
 c 
 c   
         no_wr_units(nrch) = no_wru
-        write(85,*) 'Total WRU in NR ',no_wru
-        write(85,*)
 c
       end do
 c
@@ -302,7 +292,6 @@ c  500	continue
       nrch= nreach
       xwpd=nwpd
       dt_comp=86400./xwpd
-      close(84)
 C
 C     ******************************************************
 C                         Return to RMAIN
@@ -519,10 +508,13 @@ c
 c Thermal energy budget for i = 1,2
          q_fit(i)=QNS(ncell)+0.97*QNA(ncell)-QWS-QEVAP+QCONV
       end do
-
+c
+c Linear relationship for equilibrium temperature and rate constant
+c
       A=(q_fit(1)-q_fit(2))/(T_fit(1)-T_fit(2))
       B=(T_fit(1)*q_fit(2)-T_fit(2)*q_fit(1))
      .     /(T_fit(1)-T_fit(2))
+c
       qsurf=0.5*(q_fit(1)+q_fit(2))
       RETURN
       END
@@ -909,6 +901,7 @@ c
       T_hyp = T_res(res_nn,2,n1)
     
 c*************************************************************
+c
 c Convert upstream inflow to m**3/second
 c
       q_inflow  = cuft_cum*qout(nseq)
@@ -1110,15 +1103,12 @@ c
           T_out = (q_out_res(1)*T_res(res_nn,1,n2) 
      &          +  q_out_res(2)*T_res(res_nn,2,n2)) / q_total
 c    
-c
-c NSEG = 1 for this reservoir model, since there is only one reservoir
 c 
           nseg = no_celm(nr,no_wr)
 c
         nnseg = 1
         temp(nr,no_wr,nnseg,n2) = T_out
         xkm_plot=x_dist(nr,no_wr,nseg)*3.048e-04
-        if (nr .eq. 160) xkm_plot    = 92.
         write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.1,2f9.1,3E12.3)') 
      &             time,nyear,nd,ndd,nr,no_wr,nseq,res_nn,nseg
      &            ,T_out,T_head(nr,no_wr),dbt(nseq)
