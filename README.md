@@ -18,4 +18,4 @@ The simulation of the three-hourly water temperatures in the Farmington River an
 - In the **/working_directory**, run **RBM Farmington Farmington.temp**, where **Farmington.temp* contains the simulated results
 - 
 ## Contact
-For questions regarding implementation of the integrated model system contacting John Yearsley [(jyearsle@uw.edu)]
+For questions regarding implementation of the integrated model system contact John Yearsley [(jyearsle@uw.edu)] at the University of Washington's Department of Civil and Environmental Engineering/UW Hydro|Computational Hydrology group
