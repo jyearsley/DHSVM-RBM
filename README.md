@@ -15,5 +15,7 @@ The simulation of the three-hourly water temperatures in the Farmington River an
 - Run **cp /src/RBM /working_directory/RBM**
 - Run **cp /data/Farmington.Leopold /working_directory**  
 - Run **cp /data/Farmington.Mohseni /working_directory** 
-- In the **/working_directory/, run **RBM Farmington Farmington.temp**, where **Farmington.temp* contains the simulated results
+- In the **/working_directory**, run **RBM Farmington Farmington.temp**, where **Farmington.temp* contains the simulated results
 - 
+## Contact
+For questions regarding implementation of the integrated model system contacting John Yearsley [(jyearsle@uw.edu)]
