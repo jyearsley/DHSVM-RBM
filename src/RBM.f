@@ -32,8 +32,8 @@ C
       integer iargc
       integer numarg
  
-c     Command line input
-c
+!     Command line input
+!
       numarg = iargc ( )
       if (numarg .lt. 2) then
         write (*,*) 'Too few arguments were given'
@@ -71,20 +71,20 @@ c     Read header information from control file
       do n=1,5
         read(90,*)
       end do
-c
-C     Call systems programs to get started
-C
-C     SUBROUTINE BEGIN reads control file, sets up topology and
-C     important properties of reaches
+!
+!     Call systems programs to get started
+!
+!     SUBROUTINE BEGIN reads control file, sets up topology and
+!     important properties of reaches
       write(*,*) 'Calling BEGIN'
       CALL BEGIN
-C
-C     SUBROUTINE SYSTMM performs the simulations
-C
+!
+!     SUBROUTINE SYSTMM performs the simulations
+!
       CALL SYSTMM
-C
-C     Close files after simulation is complete
-C
+!
+!     Close files after simulation is complete
+!
       write(*,*) ' Closing files after simulation'
       CLOSE(30)
       CLOSE(90)
@@ -292,12 +292,12 @@ c  500	continue
       nrch= nreach
       xwpd=nwpd
       dt_comp=86400./xwpd
-C
-C     ******************************************************
-C                         Return to RMAIN
-C     ******************************************************
-C
-c
+!
+!     ******************************************************
+!                         Return to RMAIN
+!     ******************************************************
+!
+!
       RETURN
   900 END
       SUBROUTINE SYSTMM
@@ -310,8 +310,8 @@ c
       data lat/47.6/,pi/3.14159/,rfac/304.8/
       data ndmo/0,31,59,90,120,151,181,212,243,273,304,334
      &         ,0,31,60,91,121,152,182,213,244,274,305,335/
-c
-c
+!
+!
       hour_inc=1./nwpd
       T_head(:,:) = 0.0
       T_smth(:)   = 0.0
@@ -319,19 +319,19 @@ c
       n1=1
       n2=2
       nobs=0
-c
-c     Initialize the day counter used for calculating the
-c     record position for direct access files
-c
-c
+!
+!     Initialize the day counter used for calculating the
+!     record position for direct access files
+!
+!
       write(*,*) 'Start_year ',start_year,start_month,start_day
       write(*,*) 'End_year   ',end_year,end_month,end_day
       ndays=-Julian(start_year,start_month,start_day)
      &     +Julian(end_year,end_month,end_day)+1
       write(*,*) 'Number of days ',ndays
-c      
-c     Setup the timing of the simulation
-c 
+!      
+!     Setup the timing of the simulation
+! 
       lp_year=1
       yr_days=365.
       if (mod(start_year,4).eq.0) then
@@ -357,8 +357,8 @@ c
            lp_year=2
          end if
          xd_year=nd_year
-c
-c        Day loop starts
+!
+!        Day loop starts
          if (nyear.eq.start_year) then
            nd1=ndmo(start_month,lp_year)+start_day
          else
@@ -369,18 +369,18 @@ c        Day loop starts
          else
            nd2=nd_year
          end if
-c
-c
+!
+!
          DO ND=nd1,nd2
-c
-c     Start the numbers of days-to-date counter
+!
+!     Start the numbers of days-to-date counter
            ndays=ndays+1
-c
-c     Daily period loop starts
+!
+!     Daily period loop starts
            DO ndd=nd_start,nwpd 
-c
-c     Begin reach computations
-c      
+!
+!     Begin reach computations
+!      
              ind=nd
              ipd=ndd
              day=nd
@@ -1187,8 +1187,8 @@ c     polynomials.  FUNCTION is SUBROUTINE POLINT from
 c     Numerial Recipes
 c
       FUNCTION tntrp(XA,YA,X,n)
-c      PARAMETER (N=4)
-c      DIMENSION XA(N),YA(N),C(N),D(N)
+!      PARAMETER (N=4)
+!      DIMENSION XA(N),YA(N),C(N),D(N)
       DIMENSION XA(4),YA(4),C(4),D(4)
       NS=1
       DIF=ABS(X-XA(1))
@@ -1227,12 +1227,12 @@ c      DIMENSION XA(N),YA(N),C(N),D(N)
       END
 c
       INTEGER FUNCTION Julian (YEAR,MONTH,DAY)
-C
-C---COMPUTES THE JULIAN DATE (JD) GIVEN A GREGORIAN CALENDAR
-C   DATE (YEAR,MONTH,DAY).
-C
+!
+!---COMPUTES THE JULIAN DATE (JD) GIVEN A GREGORIAN CALENDAR
+!   DATE (YEAR,MONTH,DAY).
+!
       INTEGER YEAR,MONTH,DAY,I,J,K
-C
+!
 
       I= YEAR
       J= MONTH
@@ -1242,7 +1242,7 @@ C
       Julian=
      1   K-32075+1461*(I+4800+(J-14)/12)/4+367*(J-2-(J-14)/12*12)
      2  /12-3*((I+4900+(J-14)/12)/100)/4
-C
+!
 
       RETURN
       END

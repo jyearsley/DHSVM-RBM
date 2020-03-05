@@ -8,9 +8,9 @@ C
      & ,end_year,end_month,end_day,end_hour
      & , jjl_day,nnl_rch,nlong
 
-C_flow
-C     UNDIMENSIONED FLOATING POINT VARIABLES
-C
+!_flow
+!     UNDIMENSIONED FLOATING POINT VARIABLES
+!
       COMMON/BLOCK2/a_smooth,b_smooth,dt_comp
      &             ,QSUM,time,temp_init
      &             ,XTITLE,ysim,delta_n
