@@ -26,3 +26,4 @@ clean:
 
 %.o: %.f
 	$(FC) $(FCFLAGS) -c  $<
+
