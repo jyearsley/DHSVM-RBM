@@ -1,6 +1,4 @@
 # DHSVM-RBM
-The Fortran source code for simulating stream temperatures with forcing from DHSVM
-=======
 --------------------------------------------------------------------------------------------------------------------------------------
 The Fortran source code for simulating stream temperatures with forcings from DHSVM. This code includes the capability for including monthly variations in leaf extinction coefficients and a module for simulating some features of thermal stratification in deep reservoirs. The code was used for the paper "Assessing the Impacts of Hydrologic and Land Use Alterations in the Farmington River Basin in Connecticut", published in the journal, Hydrology and Earth System Sciences.
 
