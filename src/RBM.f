@@ -188,7 +188,7 @@
 !
 !
 ! 
-        no_wr_units(nr) = 0
+        no_wru_units(nr) = 0
         Is_a_Riv = .FALSE.
         Is_a_Res = .FALSE.
         do nc=1,no_cells( nrch)
@@ -278,7 +278,7 @@
   200 continue
 ! 
 !   
-        no_wr_units(nrch) = no_wru
+        no_wru_units(nrch) = no_wru
 !
       end do
 !
@@ -399,7 +399,7 @@
                IS_HEAD = .TRUE.
                nrch = nr
                nseg = 0
-               do no_wr = 1,no_wr_units(nr)
+               do no_wr = 1,no_wru_units(nr)
 !
 ! Select either the RIVER or RSRVR case
 !
@@ -421,8 +421,8 @@
 ! Establish tributary temperatures at reach end
 !
 !
-               nseg_trib = no_celm(nr,no_wr_units(nr))
-	       T_trib(nr)=temp(nr,no_wr_units(nr),nseg_trib,n2)
+               nseg_trib = no_celm(nr,no_wru_units(nr))
+	       T_trib(nr)=temp(nr,no_wru_units(nr),nseg_trib,n2)
 !
              end do
              ntmp=n1
