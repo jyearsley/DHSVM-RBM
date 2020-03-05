@@ -1,13 +1,12 @@
 C
 C     UNDIMENSIONED INTEGER VARIABLES
 C
-      COMMON/BLOCK1/
-     & flow_cells,heat_cells
-     & ,NDAYS,nreach,ntrb,nysim
-     & ,nyear1,nyear2
-     & ,n1,n2,no_rch,nwpd,nd,nd_start
+      COMMON/BLOCK1/ NDAYS,nreach,ntrb,nysim
+     & ,nyear,nyear1,nyear2
+     & ,n1,n2,nwpd,nd,ndd,nd_start
      & ,start_year,start_month,start_day,start_hour
      & ,end_year,end_month,end_day,end_hour
+     & , jjl_day,nnl_rch,nlong
 
 C_flow
 C     UNDIMENSIONED FLOATING POINT VARIABLES
@@ -15,53 +14,74 @@ C
       COMMON/BLOCK2/a_smooth,b_smooth,dt_comp
      &             ,QSUM,time,temp_init
      &             ,XTITLE,ysim,delta_n
+c
+c Temporary addition for testing
+     &             ,DD_min,UU_min
+C
+C    Dimensioned integer variables
 C
       COMMON/BLOCK3/
-     &  no_celm(1000),no_cells(1000),no_tribs(1000),node(1000)
-     & ,main_stem(1000),last_seg(1000)
+     &  no_celm(500,50),no_cells(500),no_tribs(500),node(500)
+     & ,main_stem(500),last_seg(500)
+     & ,ndelta(500),no_wr_units(500)
+     & ,res_no(500,20)
 c
 c    Added last_seg(5000) to COMMON/BLOCK3/ to handle tributary
 c    input temperature  11/14/2008
 c
 C
-      COMMON/BLOCK4/qin(1000),q_trib(1000),qout(1000)
-     &             ,qdiff(1000),depth(1000),width(1000)
-     &             ,lat_flow(1000)
-     &             ,D_a(1000),D_b(1000),D_min(1000)
-     &             ,U_a(1000),U_b(1000),U_min(1000)
+      COMMON/BLOCK4/qin(500),q_trib(500),qout(500)
+     &             ,qdiff(500),depth(500),width(500)
+     &             ,D_a(500),D_b(500),D_min(500)
+     &             ,U_a(500),U_b(500),U_min(500)
 C
 C
-      COMMON/BLOCK5/ temp(500,-2:1000,2),T_trib(1000)
+      COMMON/BLOCK5/temp(500,20,-2:200,2),T_trib(500)
 c
 
 C     BLOCKI.COM - CONTAINS ARRAYS WITH DEPTH AND VELOCITY
 C                  CHARACTERISTICS AND RIVER MILE INDICES
 C                  FOR RNGKMOD.
 C
-      COMMON/BLOCK6/dx(1000),dt(1000)
-     &  ,x_dist(500,0:1000),u(1000),elev(1000)
+      COMMON/BLOCK6/dx(500),dt(500)
+     &  ,x_dist(500,20,0:500),u(500),elev(500)
+     &  ,a_surf(500,20,2),volume(500,20,2),Kappa(500)
 C
 C
 C     BLOCKK.COM - Contains arrays with meteorological data
 C
       COMMON/BLOCK8/
-     & QNS(1000),QNA(1000),DBT(1000),WIND(1000)
-     & ,EA(1000),PRESS(1000),PF,PHPER
-     & ,alf_Mu(1000),beta(1000),gmma(1000),mu(1000)
+     & QNS(500),QNA(500),DBT(500),WIND(500)
+     & ,EA(500),PRESS(500),PF,PHPER
+     & ,alf_Mu(500),beta(500),gmma(500),mu(500)
+     & ,T_head(500,10),T_smth(500)
+c     & ,T_res(500,2,2)
+
 c
 c     Declare variables
 c
-      COMMON/BLOCK9/segment_cell(500,1000),trib(500,1000)
-     &             ,head_cell(1000)
+      COMMON/BLOCK9/segment_cell(500,20,0:500),trib(500,500)
+     &             ,head_cell(500,50)
 c
-c
-      integer flow_cells,heat_cells,lat_flow
-     &         ,segment_cell,trib,head_cell
+      integer segment_cell,trib,head_cell
      &         ,start_year,start_month,start_day,start_hour
      &         ,end_year,end_month,end_day,end_hour
 c
-      real*4 mu
+c
+       COMMON/BLOCKA/no_wr_unit(500),upstrm_cell(500,50)
+     &              ,cells_wr(500,50),unit_type(500,50) 
+c
+       COMMON/BLOCKB/
+     &         day,day_fract,hr_fract,sim_incr,year,xd_year
+c
+       COMMON/BLOCKC/
+     &         IS_HEAD 
+      logical IS_HEAD
+      real*4 Kappa,mu
       real*8 time
+      real*8 day,day_fract,hr_fract,sim_incr,year,xd_year
+      integer upstrm_cell,cells_wr
+      character*5 unit_type
         
 
 

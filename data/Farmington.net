@@ -1,0 +1,485 @@
+Temperature simulation for the project: Farmington with existing major reservoirs
+Farmington_1.forcing
+  1.0  2.0 3.00  4.0 0.10 Mohseni parameters
+ 1.00 2.00  3.0           Leopold coefficients for depth
+ 1.00 2.00  3.0           Leopold coefficients for stream speed
+160 Headwaters 319 Stream Segments in Project: Farmington
+#_Segments     1 Headwaters   105 TribCell       10    213    170
+Seq       1 Path   213 X_0       0.000 X_1   21554.361 Elevation 100.  2 1.10 1 RIVER
+#_Segments     1 Headwaters   154 TribCell       23    307    306
+Seq       2 Path   307 X_0       0.000 X_1   11353.733 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     1 Headwaters   118 TribCell       31    237    234
+Seq       3 Path   237 X_0       0.000 X_1     695.963 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters   130 TribCell       30    260    245
+Seq       4 Path   260 X_0       0.000 X_1    9181.411 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters   120 TribCell       34    239    219
+Seq       5 Path   239 X_0       0.000 X_1    7789.485 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters   108 TribCell       33    216    222
+Seq       6 Path   216 X_0       0.000 X_1    1188.083 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters    95 TribCell       36    182    189
+Seq       7 Path   182 X_0       0.000 X_1   11304.272 Elevation 100.  2 1.10 1 RIVER     1.03 2
+#_Segments     1 Headwaters    72 TribCell       47    133    151
+Seq       8 Path   133 X_0       0.000 X_1    3072.128 Elevation 100.  2 1.10 1 RIVER     1.13 2
+#_Segments     2 Headwaters    87 TribCell       55    170    138
+Seq       9 Path   171 X_0   22165.889 X_1   24134.369 Elevation 100.  2 1.10 1 RIVER     1.10 2
+Seq      10 Path   170 X_0       0.000 X_1   22165.889 Elevation 100.  2 1.10 1 RIVER     1.12 2
+#_Segments     1 Headwaters    80 TribCell       54    156    154
+Seq      11 Path   156 X_0       0.000 X_1    4752.331 Elevation 100.  2 1.10 1 RIVER     1.13 2
+#_Segments     1 Headwaters    79 TribCell       53    149    150
+Seq      12 Path   149 X_0       0.000 X_1    7908.893 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    74 TribCell       52    139    145
+Seq      13 Path   139 X_0       0.000 X_1    9961.808 Elevation 100.  2 1.10 1 RIVER     1.08 2
+#_Segments     1 Headwaters    76 TribCell       51    144    140
+Seq      14 Path   144 X_0       0.000 X_1    8520.421 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    62 TribCell       50    116    130
+Seq      15 Path   116 X_0       0.000 X_1    6840.219 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     1 Headwaters    70 TribCell       49    131    121
+Seq      16 Path   131 X_0       0.000 X_1    3156.563 Elevation 100.  2 1.10 1 RIVER     1.11 2
+#_Segments     1 Headwaters    47 TribCell       58     84    110
+Seq      17 Path    84 X_0       0.000 X_1   15445.075 Elevation 100.  2 1.10 1 RIVER     1.12 2
+#_Segments     1 Headwaters    56 TribCell       57    102     87
+Seq      18 Path   102 X_0       0.000 X_1    5736.571 Elevation 100.  2 1.10 1 RIVER     1.17 2
+#_Segments     1 Headwaters    34 TribCell       64     63     92
+Seq      19 Path    63 X_0       0.000 X_1    1680.203 Elevation 100.  2 1.10 1 RIVER     1.11 2
+#_Segments     1 Headwaters   150 TribCell       74    299    303
+Seq      20 Path   299 X_0       0.000 X_1    9300.819 Elevation 100.  2 1.10 1 RIVER     1.14 2
+#_Segments     1 Headwaters   155 TribCell       78    308    311
+Seq      21 Path   308 X_0       0.000 X_1    2376.165 Elevation 100.  2 1.10 1 RIVER     1.18 2
+#_Segments     2 Headwaters   153 TribCell       77    306    309
+Seq      22 Path   305 X_0    1680.203 X_1   24745.897 Elevation 100.  2 1.10 1 RIVER     1.01 2
+Seq      23 Path   306 X_0       0.000 X_1    1680.203 Elevation 100.  2 1.10 1 RIVER     1.20 2
+#_Segments     1 Headwaters   148 TribCell       76    297    304
+Seq      24 Path   297 X_0       0.000 X_1   22454.166 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     1 Headwaters    89 TribCell      100    174    205
+Seq      25 Path   174 X_0       0.000 X_1   16021.629 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters    97 TribCell      102    186    187
+Seq      26 Path   186 X_0       0.000 X_1   13322.213 Elevation 100.  2 1.10 1 RIVER     1.03 12
+#_Segments     1 Headwaters    64 TribCell      107    119    143
+Seq      27 Path   119 X_0       0.000 X_1    3360.405 Elevation 100.  2 1.10 1 RIVER     0.98 3
+#_Segments     1 Headwaters    43 TribCell      112     74     78
+Seq      28 Path    74 X_0       0.000 X_1    3156.563 Elevation 100.  2 1.10 1 RIVER     1.03 2
+#_Segments     3 Headwaters   123 TribCell      127    234    191
+Seq      29 Path   246 X_0   24879.789 X_1   27951.917 Elevation 100.  2 1.10 1 RIVER     0.99 2
+Seq      30 Path   245 X_0   16394.341 X_1   24879.789 Elevation 100.  2 1.10 1 RIVER     1.02 2
+Seq      31 Path   234 X_0       0.000 X_1   16394.341 Elevation 100.  2 1.10 1 RIVER     0.94 2
+#_Segments     3 Headwaters   107 TribCell      126    219    199
+Seq      32 Path   215 X_0   19178.192 X_1   20162.432 Elevation 100.  2 1.10 1 RIVER     1.10 2
+Seq      33 Path   222 X_0    9589.096 X_1   19178.192 Elevation 100.  2 1.10 1 RIVER     1.01 2
+Seq      34 Path   219 X_0       0.000 X_1    9589.096 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     2 Headwaters    94 TribCell      125    189    194
+Seq      35 Path   181 X_0    1884.045 X_1    6924.653 Elevation 100.  2 1.10 1 RIVER     1.01 2
+Seq      36 Path   189 X_0       0.000 X_1    1884.045 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters   100 TribCell      124    198    190
+Seq      37 Path   198 X_0       0.000 X_1    6144.256 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters    91 TribCell      123    177    184
+Seq      38 Path   177 X_0       0.000 X_1   20808.937 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters    93 TribCell      122    180    183
+Seq      39 Path   180 X_0       0.000 X_1    8893.133 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    78 TribCell      131    148    146
+Seq      40 Path   148 X_0       0.000 X_1   19501.446 Elevation 100.  2 1.10 1 RIVER     0.99 2
+#_Segments     1 Headwaters    32 TribCell      144     58     51
+Seq      41 Path    58 X_0       0.000 X_1    3648.683 Elevation 100.  2 1.10 1 RIVER     1.03 2
+#_Segments     1 Headwaters    29 TribCell      143     52     53
+Seq      42 Path    52 X_0       0.000 X_1    2664.443 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    15 TribCell      147     27     45
+Seq      43 Path    27 X_0       0.000 X_1   16309.907 Elevation 100.  2 1.10 1 RIVER     1.01 2
+#_Segments     1 Headwaters    14 TribCell      146     25     26
+Seq      44 Path    25 X_0       0.000 X_1    3072.128 Elevation 100.  2 1.10 1 RIVER     1.01 2
+#_Segments     1 Headwaters    18 TribCell      152     32     30
+Seq      45 Path    32 X_0       0.000 X_1    1476.360 Elevation 100.  2 1.10 1 RIVER     1.12 2
+#_Segments     2 Headwaters    71 TribCell      169    151    160
+Seq      46 Path   132 X_0    7212.931 X_1    9792.939 Elevation 100.  2 1.10 1 RIVER     1.16 2
+Seq      47 Path   151 X_0       0.000 X_1    7212.931 Elevation 100.  2 1.10 1 RIVER     1.14 2
+#_Segments     8 Headwaters    65 TribCell      168    138    152
+Seq      48 Path   120 X_0   47980.453 X_1   52036.821 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq      49 Path   121 X_0   40275.403 X_1   47980.453 Elevation 100.  2 1.10 1 RIVER     1.01 2
+Seq      50 Path   130 X_0   33842.869 X_1   40275.403 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq      51 Path   140 X_0   26222.253 X_1   33842.869 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq      52 Path   145 X_0   25730.133 X_1   26222.253 Elevation 100.  2 1.10 1 RIVER     1.12 2
+Seq      53 Path   150 X_0   21758.200 X_1   25730.133 Elevation 100.  2 1.10 1 RIVER     1.12 2
+Seq      54 Path   154 X_0    5040.608 X_1   21758.200 Elevation 100.  2 1.10 1 RIVER     1.08 2
+Seq      55 Path   138 X_0       0.000 X_1    5040.608 Elevation 100.  2 1.10 1 RIVER     1.19 2
+#_Segments     3 Headwaters    51 TribCell      167    110    134
+Seq      56 Path    90 X_0   15121.824 X_1   15817.787 Elevation 100.  2 1.10 1 RIVER     1.17 2
+Seq      57 Path    87 X_0   13441.621 X_1   15121.824 Elevation 100.  2 1.10 1 RIVER     1.16 2
+Seq      58 Path   110 X_0       0.000 X_1   13441.621 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters    60 TribCell      166    113    111
+Seq      59 Path   113 X_0       0.000 X_1     492.120 Elevation 100.  2 1.10 1 RIVER     1.14 2
+#_Segments     1 Headwaters    59 TribCell      165    108    112
+Seq      60 Path   108 X_0       0.000 X_1    5940.413 Elevation 100.  2 1.10 1 RIVER     1.14 2
+#_Segments     1 Headwaters    54 TribCell      164     98    109
+Seq      61 Path    98 X_0       0.000 X_1    5940.413 Elevation 100.  2 1.10 1 RIVER     1.18 2
+#_Segments     1 Headwaters    57 TribCell      163    103    100
+Seq      62 Path   103 X_0       0.000 X_1     695.963 Elevation 100.  2 1.10 1 RIVER     1.18 2
+#_Segments     2 Headwaters    33 TribCell      162     92    101
+Seq      63 Path    62 X_0   14629.704 X_1   19466.469 Elevation 100.  2 1.10 1 RIVER     1.08 2
+Seq      64 Path    92 X_0       0.000 X_1   14629.704 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters    49 TribCell      161     86     91
+Seq      65 Path    86 X_0       0.000 X_1   19585.881 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters    38 TribCell      160     69     83
+Seq      66 Path    69 X_0       0.000 X_1    5736.571 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters   119 TribCell      175    238    207
+Seq      67 Path   238 X_0       0.000 X_1   15578.971 Elevation 100.  2 1.10 1 RIVER     1.19 2
+#_Segments     1 Headwaters   103 TribCell      174    206    208
+Seq      68 Path   206 X_0       0.000 X_1   11184.864 Elevation 100.  2 1.10 1 RIVER     1.12 2
+#_Segments     1 Headwaters   104 TribCell      173    212    211
+Seq      69 Path   212 X_0       0.000 X_1    6144.256 Elevation 100.  2 1.10 1 RIVER     1.13 2
+#_Segments     1 Headwaters   115 TribCell      172    230    225
+Seq      70 Path   230 X_0       0.000 X_1    1680.203 Elevation 100.  2 1.10 1 RIVER     1.19 2
+#_Segments     1 Headwaters   126 TribCell      178    251    254
+Seq      71 Path   251 X_0       0.000 X_1    1884.045 Elevation 100.  2 1.10 1 RIVER     1.14 2
+#_Segments     1 Headwaters   146 TribCell      190    295    293
+Seq      72 Path   295 X_0       0.000 X_1    1884.045 Elevation 100.  2 1.10 1 RIVER     1.32 2
+#_Segments     2 Headwaters   149 TribCell      189    303    302
+Seq      73 Path   298 X_0    7416.773 X_1    9792.939 Elevation 100.  2 1.10 1 RIVER     1.15 2
+Seq      74 Path   303 X_0       0.000 X_1    7416.773 Elevation 100.  2 1.10 1 RIVER     1.16 2
+#_Segments     4 Headwaters   147 TribCell      188    311    313
+Seq      75 Path   296 X_0   24745.893 X_1   28394.576 Elevation 100.  2 1.10 1 RIVER     1.13 2
+Seq      76 Path   304 X_0   14256.992 X_1   24745.893 Elevation 100.  2 1.10 1 RIVER     1.15 2
+Seq      77 Path   309 X_0    5448.293 X_1   14256.992 Elevation 100.  2 1.10 1 RIVER     1.15 2
+Seq      78 Path   311 X_0       0.000 X_1    5448.293 Elevation 100.  2 1.10 1 RIVER     1.18 2
+#_Segments     1 Headwaters   156 TribCell      187    310    312
+Seq      79 Path   310 X_0       0.000 X_1     984.240 Elevation 100.  2 1.10 1 RIVER     1.17 2
+#_Segments     1 Headwaters   160 TribCell      186    322    318
+Seq      80 Path   322 X_0       0.000 X_1    4056.368 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters   158 TribCell      185    317    319
+Seq      81 Path   317 X_0       0.000 X_1    4260.211 Elevation 100.  2 1.10 1 RIVER     1.13 2
+#_Segments     1 Headwaters   159 TribCell      184    320    321
+Seq      82 Path   320 X_0       0.000 X_1   10692.744 Elevation 100.  2 1.10 1 RIVER     1.11 2
+#_Segments     1 Headwaters   157 TribCell      183    314    316
+Seq      83 Path   314 X_0       0.000 X_1   11184.864 Elevation 100.  2 1.10 1 RIVER     1.09 2
+#_Segments     1 Headwaters   152 TribCell      182    301    315
+Seq      84 Path   301 X_0       0.000 X_1    1884.045 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     1 Headwaters   141 TribCell      196    283    277
+Seq      85 Path   283 X_0       0.000 X_1    5532.728 Elevation 100.  2 1.10 1 RIVER     1.08 2
+#_Segments     1 Headwaters   142 TribCell      195    284    281
+Seq      86 Path   284 X_0       0.000 X_1   19009.326 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters   135 TribCell      206    272    270
+Seq      87 Path   272 X_0       0.000 X_1    1391.925 Elevation 100.  2 1.10 1 RIVER     1.11 2
+#_Segments     1 Headwaters   137 TribCell      205    275    271
+Seq      88 Path   275 X_0       0.000 X_1   15937.195 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters   133 TribCell      204    265    269
+Seq      89 Path   265 X_0       0.000 X_1     695.963 Elevation 100.  2 1.10 1 RIVER     1.39 2
+#_Segments     1 Headwaters   131 TribCell      203    262    266
+Seq      90 Path   262 X_0       0.000 X_1     492.120 Elevation 100.  2 1.10 1 RIVER     1.12 2
+#_Segments     1 Headwaters   128 TribCell      202    253    261
+Seq      91 Path   253 X_0       0.000 X_1    2376.165 Elevation 100.  2 1.10 1 RIVER     1.08 2
+#_Segments     1 Headwaters   136 TribCell      201    273    259
+Seq      92 Path   273 X_0       0.000 X_1    8281.605 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters   124 TribCell      200    249    258
+Seq      93 Path   249 X_0       0.000 X_1    7332.339 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     1 Headwaters   127 TribCell      199    252    255
+Seq      94 Path   252 X_0       0.000 X_1   13680.441 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters   134 TribCell      198    268    263
+Seq      95 Path   268 X_0       0.000 X_1    5736.571 Elevation 100.  2 1.10 1 RIVER     1.08 2
+#_Segments     1 Headwaters   117 TribCell      211    233    247
+Seq      96 Path   233 X_0       0.000 X_1    3768.091 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters   110 TribCell      210    220    232
+Seq      97 Path   220 X_0       0.000 X_1    5532.728 Elevation 100.  2 1.10 1 RIVER     1.09 2
+#_Segments     1 Headwaters    99 TribCell      209    193    221
+Seq      98 Path   193 X_0       0.000 X_1   16921.435 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     2 Headwaters    88 TribCell      229    205    235
+Seq      99 Path   173 X_0   15241.232 X_1   16429.315 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq     100 Path   205 X_0       0.000 X_1   15241.232 Elevation 100.  2 1.10 1 RIVER     1.08 2
+#_Segments     2 Headwaters    96 TribCell      228    187    204
+Seq     101 Path   185 X_0     695.963 X_1    9096.976 Elevation 100.  2 1.10 1 RIVER     1.02 8
+Seq     102 Path   187 X_0       0.000 X_1     695.963 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     1 Headwaters    90 TribCell      227    175    188
+Seq     103 Path   175 X_0       0.000 X_1   13814.333 Elevation 100. 13 1.10 1 RIVER     0.97 13
+#_Segments     1 Headwaters    86 TribCell      226    168    176
+Seq     104 Path   168 X_0       0.000 X_1    6889.680 Elevation 100.  7 1.10 1 RIVER     1.13 6
+#_Segments     1 Headwaters    84 TribCell      225    164    169
+Seq     105 Path   164 X_0       0.000 X_1    3444.840 Elevation 100.  4 1.10 1 RIVER     1.15 3
+#_Segments     2 Headwaters    63 TribCell      224    143    165
+Seq     106 Path   118 X_0    6805.245 X_1   10250.085 Elevation 100.  4 1.10 1 RIVER     1.18 3
+Seq     107 Path   143 X_0       0.000 X_1    6805.245 Elevation 100.  7 1.10 1 RIVER     1.14 6
+#_Segments     1 Headwaters    67 TribCell      223    124    142
+Seq     108 Path   124 X_0       0.000 X_1    2460.600 Elevation 100.  3 1.10 1 RIVER     1.00 2
+#_Segments     1 Headwaters    58 TribCell      222    107    123
+Seq     109 Path   107 X_0       0.000 X_1    9096.976 Elevation 100.  9 1.10 1 RIVER     0.98 8
+#_Segments     1 Headwaters    55 TribCell      221     99    106
+Seq     110 Path    99 X_0       0.000 X_1    1188.083 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     2 Headwaters    42 TribCell      220     78     97
+Seq     111 Path    73 X_0    2087.888 X_1   27375.363 Elevation 100. 20 1.10 1 RIVER     1.01 2
+Seq     112 Path    78 X_0       0.000 X_1    2087.888 Elevation 100. 20 1.10 1 RIVER     1.15 2
+#_Segments     1 Headwaters    37 TribCell      219     67     79
+Seq     113 Path    67 X_0       0.000 X_1   16190.499 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters    35 TribCell      218     64     68
+Seq     114 Path    64 X_0       0.000 X_1    3275.971 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters    27 TribCell      217     46     59
+Seq     115 Path    46 X_0       0.000 X_1    6024.848 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters    26 TribCell      216     44     47
+Seq     116 Path    44 X_0       0.000 X_1    1884.045 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    21 TribCell      215     36     43
+Seq     117 Path    36 X_0       0.000 X_1   11065.456 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters   109 TribCell      235    217    210
+Seq     118 Path   217 X_0       0.000 X_1    7416.773 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters   111 TribCell      234    223    202
+Seq     119 Path   223 X_0       0.000 X_1    9096.976 Elevation 100.  2 1.10 1 RIVER     0.95 2
+#_Segments     1 Headwaters   106 TribCell      233    214    203
+Seq     120 Path   214 X_0       0.000 X_1    2783.851 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     7 Headwaters    92 TribCell      246    191    159
+Seq     121 Path   179 X_0   54546.883 X_1   64831.941 Elevation 100.  4 1.10 1 RIVER     1.00 2
+Seq     122 Path   183 X_0   39628.901 X_1   54546.883 Elevation 100.  4 1.10 1 RIVER     1.05 2
+Seq     123 Path   184 X_0   37541.013 X_1   39628.901 Elevation 100.  4 1.10 1 RIVER     1.04 2
+Seq     124 Path   190 X_0   28444.037 X_1   37541.013 Elevation 100.  4 1.10 1 RIVER     1.03 2
+Seq     125 Path   194 X_0   25864.029 X_1   28444.037 Elevation 100.  8 1.10 1 RIVER     1.11 2
+Seq     126 Path   199 X_0   18447.256 X_1   25864.029 Elevation 100.  4 1.10 1 RIVER     1.06 2
+Seq     127 Path   191 X_0       0.000 X_1   18447.256 Elevation 100.  4 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters    81 TribCell      245    157    155
+Seq     128 Path   157 X_0       0.000 X_1    8520.421 Elevation 100.  2 1.10 1 RIVER     0.99 2
+#_Segments     1 Headwaters    75 TribCell      244    141    153
+Seq     129 Path   141 X_0       0.000 X_1    3768.091 Elevation 100.  2 1.10 1 RIVER     0.98 2
+#_Segments     2 Headwaters    77 TribCell      243    146    135
+Seq     130 Path   147 X_0   15937.195 X_1   18025.083 Elevation 100.  2 1.10 1 RIVER     1.09 2
+Seq     131 Path   146 X_0       0.000 X_1   15937.195 Elevation 100.  2 1.10 1 RIVER     1.00 2
+#_Segments     1 Headwaters    68 TribCell      242    125    127
+Seq     132 Path   125 X_0       0.000 X_1    1884.045 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters    61 TribCell      241    115    126
+Seq     133 Path   115 X_0       0.000 X_1   10657.771 Elevation 100.  2 1.10 1 RIVER     1.03 2
+#_Segments     1 Headwaters    66 TribCell      240    122    117
+Seq     134 Path   122 X_0       0.000 X_1   16921.435 Elevation 100.  2 1.10 1 RIVER     1.00 2
+#_Segments     1 Headwaters    52 TribCell      239     93    114
+Seq     135 Path    93 X_0       0.000 X_1    5532.728 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    50 TribCell      238     89     94
+Seq     136 Path    89 X_0       0.000 X_1    5617.163 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    45 TribCell      237     77     88
+Seq     137 Path    77 X_0       0.000 X_1    9624.069 Elevation 100.  2 1.10 1 RIVER     1.03 2
+#_Segments     1 Headwaters    53 TribCell      252     96    104
+Seq     138 Path    96 X_0       0.000 X_1    3360.405 Elevation 100.  2 1.10 1 RIVER     1.10 2
+#_Segments     1 Headwaters    46 TribCell      251     81     95
+Seq     139 Path    81 X_0       0.000 X_1   10981.021 Elevation 100.  2 1.10 1 RIVER     1.03 2
+#_Segments     1 Headwaters    41 TribCell      250     72     80
+Seq     140 Path    72 X_0       0.000 X_1    7128.496 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    31 TribCell      256     57     60
+Seq     141 Path    57 X_0       0.000 X_1    7332.339 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     3 Headwaters    28 TribCell      262     51     55
+Seq     142 Path    50 X_0   13561.029 X_1   18025.083 Elevation 100.  2 1.10 1 RIVER     1.04 2
+Seq     143 Path    53 X_0    4752.331 X_1   13561.029 Elevation 100.  2 1.10 1 RIVER     1.02 2
+Seq     144 Path    51 X_0       0.000 X_1    4752.331 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     3 Headwaters    13 TribCell      261     45     49
+Seq     145 Path    21 X_0   31128.969 X_1   31824.931 Elevation 100.  2 1.10 1 RIVER     1.03 2
+Seq     146 Path    26 X_0   28345.118 X_1   31128.969 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq     147 Path    45 X_0       0.000 X_1   28345.118 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters    25 TribCell      260     41     48
+Seq     148 Path    41 X_0       0.000 X_1    2376.165 Elevation 100.  2 1.10 1 RIVER     1.01 2
+#_Segments     1 Headwaters    24 TribCell      259     40     42
+Seq     149 Path    40 X_0       0.000 X_1    1476.360 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters    23 TribCell      258     38     39
+Seq     150 Path    38 X_0       0.000 X_1    7128.496 Elevation 100.  2 1.10 1 RIVER     1.01 2
+#_Segments     2 Headwaters    17 TribCell      267     30     24
+Seq     151 Path    31 X_0    5652.136 X_1    9216.384 Elevation 100.  2 1.10 1 RIVER     1.10 2
+Seq     152 Path    30 X_0       0.000 X_1    5652.136 Elevation 100.  2 1.10 1 RIVER     1.09 5
+#_Segments     1 Headwaters     8 TribCell      266     12     23
+Seq     153 Path    12 X_0       0.000 X_1     695.963 Elevation 100.  2 1.10 1 RIVER     1.34 2
+#_Segments     1 Headwaters     5 TribCell      274      5      9
+Seq     154 Path     5 X_0       0.000 X_1    1680.203 Elevation 100.  2 1.10 1 RIVER     1.11 2
+#_Segments     1 Headwaters     4 TribCell      273      4      6
+Seq     155 Path     4 X_0       0.000 X_1   11676.984 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters   101 TribCell      319    200    195
+Seq     156 Path   200 X_0       0.000 X_1   24014.961 Elevation 100.  2 1.10 1 RIVER     1.16 2
+#_Segments     1 Headwaters    83 TribCell      318    163    178
+Seq     157 Path   163 X_0       0.000 X_1    5532.728 Elevation 100.  2 1.10 1 RIVER     1.14 2
+#_Segments     1 Headwaters    85 TribCell      317    166    167
+Seq     158 Path   166 X_0       0.000 X_1    1680.203 Elevation 100.  2 1.10 1 RIVER     1.15 2
+#_Segments    11 Headwaters    36 TribCell      316    160    172
+Seq     159 Path    65 X_0   59150.829 X_1   61526.995 Elevation 100.  2 1.10 1 RIVER     1.10 2
+Seq     160 Path    83 X_0   45878.077 X_1   59150.829 Elevation 100.  2 1.10 1 RIVER     1.08 2
+Seq     161 Path    91 X_0   39037.859 X_1   45878.077 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq     162 Path   101 X_0   34081.685 X_1   39037.859 Elevation 100.  2 1.10 1 RIVER     1.17 2
+Seq     163 Path   100 X_0   30925.123 X_1   34081.685 Elevation 100.  2 1.10 1 RIVER     1.18 2
+Seq     164 Path   109 X_0   27564.717 X_1   30925.123 Elevation 100.  2 1.10 1 RIVER     1.14 2
+Seq     165 Path   112 X_0   23100.664 X_1   27564.717 Elevation 100.  2 1.10 1 RIVER     1.14 2
+Seq     166 Path   111 X_0   21912.581 X_1   23100.664 Elevation 100.  2 1.10 1 RIVER     1.14 2
+Seq     167 Path   134 X_0   13680.437 X_1   21912.581 Elevation 100.  2 1.10 1 RIVER     1.14 2
+Seq     168 Path   152 X_0    5244.451 X_1   13680.437 Elevation 100.  2 1.10 1 RIVER     1.17 2
+Seq     169 Path   160 X_0       0.000 X_1    5244.451 Elevation 100.  2 1.10 1 RIVER     1.21 2
+#_Segments     1 Headwaters    82 TribCell      315    162    161
+Seq     170 Path   162 X_0       0.000 X_1    6516.968 Elevation 100.  2 1.10 1 RIVER     1.19 2
+#_Segments     5 Headwaters   112 TribCell      314    207    196
+Seq     171 Path   226 X_0   18482.229 X_1   25610.725 Elevation 100.  2 1.10 1 RIVER     1.12 2
+Seq     172 Path   225 X_0    8077.763 X_1   18482.229 Elevation 100.  2 1.10 1 RIVER     1.14 2
+Seq     173 Path   211 X_0    4632.923 X_1    8077.763 Elevation 100.  2 1.10 1 RIVER     1.16 2
+Seq     174 Path   208 X_0    1680.203 X_1    4632.923 Elevation 100.  2 1.10 1 RIVER     1.14 2
+Seq     175 Path   207 X_0       0.000 X_1    1680.203 Elevation 100.  2 1.10 1 RIVER     1.19 2
+#_Segments     1 Headwaters   113 TribCell      313    228    218
+Seq     176 Path   228 X_0       0.000 X_1    3852.525 Elevation 100.  2 1.10 1 RIVER     1.23 2
+#_Segments     2 Headwaters   125 TribCell      312    254    244
+Seq     177 Path   250 X_0   14545.269 X_1   26629.939 Elevation 100.  2 1.10 1 RIVER     1.15 2
+Seq     178 Path   254 X_0       0.000 X_1   14545.269 Elevation 100.  2 1.10 1 RIVER     1.13 2
+#_Segments     1 Headwaters   138 TribCell      311    278    274
+Seq     179 Path   278 X_0       0.000 X_1   16021.629 Elevation 100.  2 1.10 1 RIVER     1.11 2
+#_Segments     1 Headwaters   144 TribCell      310    289    288
+Seq     180 Path   289 X_0       0.000 X_1   13068.909 Elevation 100.  2 1.10 1 RIVER     1.18 2
+#_Segments    10 Headwaters   151 TribCell      309    293    290
+Seq     181 Path   300 X_0   88017.046 X_1   89205.129 Elevation 100.  2 1.10 1 RIVER     1.12 2
+Seq     182 Path   315 X_0   70603.492 X_1   88017.046 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq     183 Path   316 X_0   68142.892 X_1   70603.492 Elevation 100.  2 1.10 1 RIVER     1.22 2
+Seq     184 Path   321 X_0   47945.483 X_1   68142.892 Elevation 100.  2 1.10 1 RIVER     1.05 2
+Seq     185 Path   319 X_0   46061.438 X_1   47945.483 Elevation 100.  2 1.10 1 RIVER     1.20 2
+Seq     186 Path   318 X_0   36387.907 X_1   46061.438 Elevation 100.  2 1.10 1 RIVER     1.10 2
+Seq     187 Path   312 X_0   34911.547 X_1   36387.907 Elevation 100.  2 1.10 1 RIVER     1.18 2
+Seq     188 Path   313 X_0   13729.899 X_1   34911.547 Elevation 100.  2 1.10 1 RIVER     1.14 2
+Seq     189 Path   302 X_0    3768.091 X_1   13729.899 Elevation 100.  2 1.10 1 RIVER     1.18 2
+Seq     190 Path   293 X_0       0.000 X_1    3768.091 Elevation 100.  2 1.10 1 RIVER     1.33 2
+#_Segments     1 Headwaters   143 TribCell      308    286    291
+Seq     191 Path   286 X_0       0.000 X_1   37287.713 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     1 Headwaters   145 TribCell      307    292    287
+Seq     192 Path   292 X_0       0.000 X_1    9792.939 Elevation 100.  2 1.10 1 RIVER     1.13 2
+#_Segments     1 Headwaters   139 TribCell      306    279    285
+Seq     193 Path   279 X_0       0.000 X_1    2664.443 Elevation 100.  2 1.10 1 RIVER     1.09 2
+#_Segments     3 Headwaters   140 TribCell      305    277    280
+Seq     194 Path   282 X_0    5652.136 X_1    8724.264 Elevation 100.  2 1.10 1 RIVER     1.05 2
+Seq     195 Path   281 X_0    1188.083 X_1    5652.136 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq     196 Path   277 X_0       0.000 X_1    1188.083 Elevation 100.  2 1.10 1 RIVER     1.09 2
+#_Segments    10 Headwaters   132 TribCell      304    270    276
+Seq     197 Path   264 X_0   45196.603 X_1   55108.949 Elevation 100.  2 1.10 1 RIVER     1.05 2
+Seq     198 Path   263 X_0   41140.235 X_1   45196.603 Elevation 100.  2 1.10 1 RIVER     1.11 2
+Seq     199 Path   255 X_0   36676.181 X_1   41140.235 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq     200 Path   258 X_0   31227.888 X_1   36676.181 Elevation 100.  2 1.10 1 RIVER     1.04 2
+Seq     201 Path   259 X_0   26271.715 X_1   31227.888 Elevation 100.  2 1.10 1 RIVER     1.05 2
+Seq     202 Path   261 X_0   18651.099 X_1   26271.715 Elevation 100.  2 1.10 1 RIVER     1.04 2
+Seq     203 Path   266 X_0   10369.493 X_1   18651.099 Elevation 100.  1 1.10 2 RSRVR     1.07 50
+Seq     204 Path   269 X_0    5328.885 X_1   10369.493 Elevation 100.  1 1.10 2 RSRVR     1.08 50
+Seq     205 Path   271 X_0    1391.925 X_1    5328.885 Elevation 100.  1 1.10 2 RSRVR     1.11 2
+Seq     206 Path   270 X_0       0.000 X_1    1391.925 Elevation 100.  2 1.10 3 RIVER     1.03 2
+#_Segments     1 Headwaters   129 TribCell      303    257    267
+Seq     207 Path   257 X_0       0.000 X_1   10573.336 Elevation 100.  2 1.10 1 RIVER     1.09 2
+#_Segments     4 Headwaters    98 TribCell      302    247    256
+Seq     208 Path   192 X_0   27410.336 X_1   33927.304 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq     209 Path   221 X_0   14833.547 X_1   27410.336 Elevation 100.  2 1.10 1 RIVER     1.04 2
+Seq     210 Path   232 X_0   11761.419 X_1   14833.547 Elevation 100.  2 1.10 1 RIVER     1.19 2
+Seq     211 Path   247 X_0       0.000 X_1   11761.419 Elevation 100.  2 1.10 1 RIVER     1.09 2
+#_Segments     1 Headwaters   122 TribCell      301    242    248
+Seq     212 Path   242 X_0       0.000 X_1    1968.480 Elevation 100.  2 1.10 1 RIVER     1.10 2
+#_Segments     1 Headwaters   121 TribCell      300    240    243
+Seq     213 Path   240 X_0       0.000 X_1   18651.099 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments    16 Headwaters    20 TribCell      299    235    241
+Seq     214 Path    35 X_0   97466.243 X_1  103610.499 Elevation 100.  2 1.10 1 RIVER     1.05 2
+Seq     215 Path    43 X_0   94309.680 X_1   97466.243 Elevation 100.  2 1.10 1 RIVER     1.10 2
+Seq     216 Path    47 X_0   88776.952 X_1   94309.680 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq     217 Path    59 X_0   77388.245 X_1   88776.952 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq     218 Path    68 X_0   69563.787 X_1   77388.245 Elevation 100.  2 1.10 1 RIVER     1.01 2
+Seq     219 Path    79 X_0   64607.613 X_1   69563.787 Elevation 100.  2 1.10 1 RIVER     1.04 2
+Seq     220 Path    97 X_0   54357.528 X_1   64607.613 Elevation 100.  1 1.10 2 RSRVR     1.04 50
+Seq     221 Path   106 X_0   51200.965 X_1   54357.528 Elevation 100.  1 1.10 2 RSRVR     1.03 50
+Seq     222 Path   123 X_0   45295.525 X_1   51200.965 Elevation 100.  1 1.10 2 RSRVR     1.18 50
+Seq     223 Path   142 X_0   39390.085 X_1   45295.525 Elevation 100.  1 1.10 2 RSRVR     1.16 50
+Seq     224 Path   165 X_0   28528.472 X_1   39390.085 Elevation 100.  1 1.10 2 RSRVR     1.09 50
+Seq     225 Path   169 X_0   27340.389 X_1   28528.472 Elevation 100.  1 1.10 2 RSRVR     1.11 50
+Seq     226 Path   176 X_0   22299.781 X_1   27340.389 Elevation 100.  1 1.10 2 RSRVR     1.08 50
+Seq     227 Path   188 X_0   16767.053 X_1   22299.781 Elevation 100.  1 1.10 2 RSRVR     1.05 50
+Seq     228 Path   204 X_0   11845.853 X_1   16767.053 Elevation 100.  1 1.10 3 RSRVR     1.06 50
+Seq     229 Path   235 X_0       0.000 X_1   11845.853 Elevation 100.  1 1.10 3 RSRVR     1.09 50
+#_Segments     1 Headwaters   114 TribCell      298    229    236
+Seq     230 Path   229 X_0       0.000 X_1    3648.683 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     1 Headwaters   116 TribCell      297    231    227
+Seq     231 Path   231 X_0       0.000 X_1    6228.691 Elevation 100.  2 1.10 1 RIVER     1.07 2
+#_Segments     4 Headwaters   102 TribCell      296    210    224
+Seq     232 Path   201 X_0   17532.963 X_1   18025.083 Elevation 100.  2 1.10 1 RIVER     1.08 2
+Seq     233 Path   203 X_0   12780.632 X_1   17532.963 Elevation 100.  2 1.10 1 RIVER     1.02 2
+Seq     234 Path   202 X_0    7128.496 X_1   12780.632 Elevation 100.  2 1.10 1 RIVER     1.05 2
+Seq     235 Path   210 X_0       0.000 X_1    7128.496 Elevation 100.  2 1.10 1 RIVER     1.08 2
+#_Segments    11 Headwaters    44 TribCell      295    159    209
+Seq     236 Path    76 X_0   67059.726 X_1   85913.689 Elevation 100.  7 1.10 1 RIVER     1.03 2
+Seq     237 Path    88 X_0   57843.342 X_1   67059.726 Elevation 100.  2 1.10 1 RIVER     1.03 2
+Seq     238 Path    94 X_0   54075.251 X_1   57843.342 Elevation 100.  2 1.10 1 RIVER     1.04 2
+Seq     239 Path   114 X_0   40479.245 X_1   54075.251 Elevation 100.  2 1.10 1 RIVER     1.03 2
+Seq     240 Path   117 X_0   37610.960 X_1   40479.245 Elevation 100.  2 1.10 1 RIVER     1.12 2
+Seq     241 Path   126 X_0   29905.909 X_1   37610.960 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq     242 Path   127 X_0   28021.864 X_1   29905.909 Elevation 100.  2 1.10 1 RIVER     1.00 2
+Seq     243 Path   135 X_0   20977.803 X_1   28021.864 Elevation 100.  2 1.10 1 RIVER     1.00 2
+Seq     244 Path   153 X_0   10285.059 X_1   20977.803 Elevation 100.  2 1.10 1 RIVER     0.96 2
+Seq     245 Path   155 X_0    7620.616 X_1   10285.059 Elevation 100.  2 1.10 1 RIVER     1.11 2
+Seq     246 Path   159 X_0       0.000 X_1    7620.616 Elevation 100.  2 1.10 1 RIVER     1.10 2
+#_Segments     1 Headwaters    73 TribCell      294    136    158
+Seq     247 Path   136 X_0       0.000 X_1    5040.608 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    69 TribCell      293    128    137
+Seq     248 Path   128 X_0       0.000 X_1   16837.000 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     4 Headwaters    40 TribCell      292    104    129
+Seq     249 Path    71 X_0   17582.424 X_1   25083.632 Elevation 100.  2 1.10 1 RIVER     1.03 2
+Seq     250 Path    80 X_0   14629.704 X_1   17582.424 Elevation 100.  2 1.10 1 RIVER     1.12 2
+Seq     251 Path    95 X_0    5125.043 X_1   14629.704 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq     252 Path   104 X_0       0.000 X_1    5125.043 Elevation 100.  2 1.10 1 RIVER     1.08 5
+#_Segments     1 Headwaters    48 TribCell      291     85    105
+Seq     253 Path    85 X_0       0.000 X_1    9792.939 Elevation 100.  2 1.10 1 RIVER     0.98 2
+#_Segments     1 Headwaters    39 TribCell      290     70     82
+Seq     254 Path    70 X_0       0.000 X_1    9877.373 Elevation 100.  2 1.10 1 RIVER     0.98 2
+#_Segments     2 Headwaters    30 TribCell      289     60     66
+Seq     255 Path    56 X_0    4548.488 X_1    6432.533 Elevation 100.  2 1.10 1 RIVER     1.00 2
+Seq     256 Path    60 X_0       0.000 X_1    4548.488 Elevation 100.  2 1.10 1 RIVER     0.95 2
+#_Segments     6 Headwaters    22 TribCell      288     55     61
+Seq     257 Path    37 X_0   27818.021 X_1   36134.600 Elevation 100.  2 1.10 1 RIVER     1.01 2
+Seq     258 Path    39 X_0   27122.059 X_1   27818.021 Elevation 100.  2 1.10 1 RIVER     1.09 2
+Seq     259 Path    42 X_0   20401.248 X_1   27122.059 Elevation 100.  2 1.10 1 RIVER     1.01 2
+Seq     260 Path    48 X_0   10896.587 X_1   20401.248 Elevation 100.  2 1.10 1 RIVER     1.00 2
+Seq     261 Path    49 X_0    9504.661 X_1   10896.587 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq     262 Path    55 X_0       0.000 X_1    9504.661 Elevation 100.  2 1.10 1 RIVER     1.05 2
+#_Segments     1 Headwaters    19 TribCell      287     34     54
+Seq     263 Path    34 X_0       0.000 X_1    4056.368 Elevation 100.  2 1.10 1 RIVER     0.98 2
+#_Segments     1 Headwaters    16 TribCell      286     29     33
+Seq     264 Path    29 X_0       0.000 X_1    3360.405 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments     3 Headwaters     7 TribCell      285     24     28
+Seq     265 Path    11 X_0   28021.867 X_1   47115.628 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq     266 Path    23 X_0    9504.661 X_1   28021.867 Elevation 100.  2 1.10 1 RIVER     1.03 2
+Seq     267 Path    24 X_0       0.000 X_1    9504.661 Elevation 100.  2 1.10 1 RIVER     1.01 2
+#_Segments     1 Headwaters    12 TribCell      284     20     22
+Seq     268 Path    20 X_0       0.000 X_1    6228.691 Elevation 100.  2 1.10 1 RIVER     1.00 2
+#_Segments     1 Headwaters    11 TribCell      283     18     19
+Seq     269 Path    18 X_0       0.000 X_1   22777.417 Elevation 100.  2 1.10 1 RIVER     1.04 2
+#_Segments     1 Headwaters    10 TribCell      282     15     17
+Seq     270 Path    15 X_0       0.000 X_1   15480.048 Elevation 100.  2 1.10 1 RIVER     1.03 2
+#_Segments     1 Headwaters     9 TribCell      281     14     16
+Seq     271 Path    14 X_0       0.000 X_1     492.120 Elevation 100.  2 1.10 1 RIVER     1.12 2
+#_Segments     3 Headwaters     3 TribCell      280      9     13
+Seq     272 Path     3 X_0    9181.411 X_1   11353.733 Elevation 100.  2 1.10 1 RIVER     1.10 2
+Seq     273 Path     6 X_0    7009.088 X_1    9181.411 Elevation 100.  2 1.10 1 RIVER     1.11 2
+Seq     274 Path     9 X_0       0.000 X_1    7009.088 Elevation 100.  2 1.10 1 RIVER     0.98 2
+#_Segments     1 Headwaters     6 TribCell      279      8     10
+Seq     275 Path     8 X_0       0.000 X_1    5040.608 Elevation 100.  2 1.10 1 RIVER     1.02 2
+#_Segments     1 Headwaters     2 TribCell      278      2      7
+Seq     276 Path     2 X_0       0.000 X_1    2952.720 Elevation 100.  2 1.10 1 RIVER     1.06 2
+#_Segments    43 Headwaters     1 TribCell      320    195      0
+Seq     277 Path     1 X_0  398936.484 X_1  402093.047 Elevation 100.  2 1.10 1 RIVER     1.03 2
+Seq     278 Path     7 X_0  388412.606 X_1  398936.484 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq     279 Path    10 X_0  387716.644 X_1  388412.606 Elevation 100.  2 1.10 1 RIVER     1.06 2
+Seq     280 Path    13 X_0  372152.158 X_1  387716.644 Elevation 100.  2 1.10 1 RIVER     1.03 2
+Seq     281 Path    16 X_0  368095.790 X_1  372152.158 Elevation 100.  2 1.10 1 RIVER     1.07 2
+Seq     282 Path    17 X_0  366703.864 X_1  368095.790 Elevation 100.  2 1.10 1 RIVER     1.13 2
+Seq     283 Path    19 X_0  361051.728 X_1  366703.864 Elevation 100.  2 1.10 1 RIVER     1.04 2
+Seq     284 Path    22 X_0  355603.435 X_1  361051.728 Elevation 100.  2 1.10 1 RIVER     0.98 2
+Seq     285 Path    28 X_0  353142.835 X_1  355603.435 Elevation 100.  2 1.10 1 RIVER     1.08 2
+Seq     286 Path    33 X_0  338885.843 X_1  353142.835 Elevation 100.  2 1.10 1 RIVER     1.00 2
+Seq     287 Path    54 X_0  322575.936 X_1  338885.843 Elevation 100.  2 1.10 1 RIVER     0.99 2
+Seq     288 Path    61 X_0  315735.718 X_1  322575.936 Elevation 100.  2 1.10 1 RIVER     1.00 2
+Seq     289 Path    66 X_0  312663.590 X_1  315735.718 Elevation 100.  2 1.10 1 RIVER     0.98 50
+Seq     290 Path    82 X_0  305246.816 X_1  312663.590 Elevation 100.  1 1.10 2 RSRVR     1.00 50
+Seq     291 Path   105 X_0  294061.952 X_1  305246.816 Elevation 100.  1 1.10 2 RSRVR     1.02 50
+Seq     292 Path   129 X_0  284061.635 X_1  294061.952 Elevation 100.  1 1.10 3 RSRVR     0.98 50
+Seq     293 Path   137 X_0  278293.627 X_1  284061.635 Elevation 100. 10 1.10 4 RIVER     1.07 2
+Seq     294 Path   158 X_0  267516.448 X_1  278293.627 Elevation 100.  8 1.10 4 RIVER     1.06 2
+Seq     295 Path   209 X_0  241701.880 X_1  267516.448 Elevation 100.  6 1.10 4 RIVER     1.02 2
+Seq     296 Path   224 X_0  232773.774 X_1  241701.880 Elevation 100.  2 1.10 4 RIVER     1.03 2
+Seq     297 Path   227 X_0  230109.331 X_1  232773.774 Elevation 100.  2 1.10 4 RIVER     1.14 2
+Seq     298 Path   236 X_0  225933.555 X_1  230109.331 Elevation 100.  2 1.10 4 RIVER     1.13 2
+Seq     299 Path   241 X_0  223353.547 X_1  225933.555 Elevation 100.  2 1.10 4 RIVER     1.11 2
+Seq     300 Path   243 X_0  219873.734 X_1  223353.547 Elevation 100.  2 1.10 4 RIVER     1.10 2
+Seq     301 Path   248 X_0  209300.398 X_1  219873.734 Elevation 100.  2 1.10 4 RIVER     1.06 2
+Seq     302 Path   256 X_0  200864.411 X_1  209300.398 Elevation 100.  2 1.10 4 RIVER     1.11 2
+Seq     303 Path   267 X_0  192632.267 X_1  200864.411 Elevation 100.  2 1.10 4 RIVER     1.08 2
+Seq     304 Path   276 X_0  185011.651 X_1  192632.267 Elevation 100.  2 1.10 4 RIVER     1.03 2
+Seq     305 Path   280 X_0  179767.200 X_1  185011.651 Elevation 100.  2 1.10 4 RIVER     1.06 2
+Seq     306 Path   285 X_0  169854.854 X_1  179767.200 Elevation 100.  2 1.10 4 RIVER     1.08 2
+Seq     307 Path   287 X_0  167886.374 X_1  169854.854 Elevation 100.  2 1.10 4 RIVER     1.16 2
+Seq     308 Path   291 X_0  149573.014 X_1  167886.374 Elevation 100.  2 1.10 4 RIVER     1.13 2
+Seq     309 Path   290 X_0  145720.489 X_1  149573.014 Elevation 100.  2 1.10 4 RIVER     1.31 2
+Seq     310 Path   288 X_0  128426.342 X_1  145720.489 Elevation 100.  2 1.10 4 RIVER     1.15 2
+Seq     311 Path   274 X_0  107652.382 X_1  128426.342 Elevation 100.  2 1.10 4 RIVER     1.09 2
+Seq     312 Path   244 X_0   94534.011 X_1  107652.382 Elevation 100.  2 1.10 4 RIVER     1.18 2
+Seq     313 Path   218 X_0   87932.609 X_1   94534.011 Elevation 100.  2 1.10 4 RIVER     1.24 2
+Seq     314 Path   196 X_0   70757.870 X_1   87932.609 Elevation 100.  2 1.10 4 RIVER     1.11 2
+Seq     315 Path   161 X_0   68381.705 X_1   70757.870 Elevation 100.  2 1.10 4 RIVER     1.19 2
+Seq     316 Path   172 X_0   51748.544 X_1   68381.705 Elevation 100.  2 1.10 4 RIVER     1.03 2
+Seq     317 Path   167 X_0   24338.208 X_1   51748.544 Elevation 100. 15 1.10 4 RIVER     1.08 50
+Seq     318 Path   178 X_0    6024.848 X_1   24338.208 Elevation 100.  2 1.10 4 RIVER     1.14 2
+Seq     319 Path   195 X_0       0.000 X_1    6024.848 Elevation 100.  2 1.10 4 RIVER     1.19 2
