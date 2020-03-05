@@ -2,6 +2,7 @@
 ! Reservoir subroutine
 !
       SUBROUTINE RSRVR(nseg,nseq,nr,no_wr,res_nn)
+      use Block_Energy
       use Block_Hydro
       use Block_Network
       use Block_WQ
@@ -10,44 +11,84 @@
 !
 ! Reservoir inlows and advected thermal energy
 !
-      integer, parameter                  :: dp=kind(0.d0)
-      integer                             :: res_nn,res_seg
-!
-      logical                             :: DONE
-!
-      real*4                              :: kappa_z
-      real, dimension(:), allocatable     :: q_advct_trb,q_in_res,q_out_res,q_in_trb,q_vert
-      real, dimension(:), allocatable     :: area_sum,vol_sum,T_in,Q_advect
-      real, dimension(:,:,:), allocatable :: temp_res
-!
-      real(dp)                            :: density1,density2
+      integer, parameter                  :: dp = selected_real_kind(15, 307)
 
+      integer                             :: l1,layer,nc,nl,nsq_1
+      integer                             :: nseg,nseq,nnseg,nr,ntrb,ntribs,nr_trib,no_wr
+      integer                             :: res_nn,res_seg
+      integer                             :: NLAYER
+!
+      logical                             :: DONE       
+!
+      real,parameter                      :: rho_cp = 4.184e6 ! rho/Cp kg/meter**3/Joules/kg/Deg K
+!
+      real                                :: A,B,kappa_z,eddy_dff,res_time,wind_fctr,xkm_plot
+      real                                :: q1,q2,q_advct_sum,q_dff_epi,Q_dff_hyp,q_inflow
+      real                                :: q_tmp,q_total,q_v,q_vert_epi,qq_trib
+      real                                :: Q_netsurf,Q_surface
+      real                                :: T_epi,T_hyp,T_inflow,T_out,T_tmp,TTEMP_head
+      real, dimension(2)                  :: q_vert
+      real, dimension(2)                  :: q_advct,q_advct_trb,q_in_res,q_out_res,q_in_trb
+      real, dimension(2)                  :: area_sum,vol_sum,T_in,Q_advect
 !
 ! Reservoir temperatures are saved as TEMP_res(m1,m2,m3,m4)
 ! m1 = reach #, m2 = water resource unit #, m3 = res #, m4 = layer #, m5 = time index
-!
-      SAVE TEMP_res
-!
-! Find the input temperature
-!
-      call HEAD_TEMP (nseq+1,nr,no_wr)
 !
 ! Initialize  reservoir properties
 !
       Area_sum(:) = 0.0
       Vol_sum(:)  = 0.0
-
+!
+! Find the input temperature
+!
+      res_seg = 0
+!
+      do nc = 1,cells_wr(nr,no_wr)
+!
+! Update segment and cell #'s
+!
+        nseq     = nseq + 1  
+        res_seg   = res_seg + 1
+        DONE   = .FALSE.
+!
+        do nl = 1,2
+          Area_sum(nl) = Area_sum(nl) + a_surf(res_nn,res_seg,nl)
+          Vol_sum(nl)  = Vol_sum(nl) + volume(res_nn,res_seg,nl)
+        end do
+!
+! Read the forcing file
+!
+        read(30,*) l1                                            &       
+                          ,press(nseq),dbt(nseq)                 &
+                          ,qna(nseq),qns(nseq)                   &
+                          ,ea(nseq),wind(nseq)                   &
+                          ,q_in(nseq),q_out(nseq)
+!
+!
+! Smooth the temperature, if this is a headwaters
+!
+!      if (IS_HEAD) then
+!        T_smth(nr)=b_smooth*T_smth(nr)                                   &
+!                  +a_smooth*dbt(nseq)
+!      end if
+!
+! Call energy budget routine
+!
+        Call ENERGY(T_epi,Q_surface,wind_fctr,A,B,nseq)
+        Q_netsurf = Q_netsurf                                    &
+                  + a_surf(res_nn,res_seg,1)*Q_surface/rho_cp
+!
+      call HEAD_TEMP (nseq+1,nr,no_wr)
 !
 ! Initialize epilimnion and hypolimnion temperatures
 !
       T_epi = TEMP_res(res_nn,1,n1)
       T_hyp = TEMP_res(res_nn,2,n1)
-    
 !*************************************************************
 !
 ! Convert upstream inflow to m**3/second
 !
-      q_inflow  = cuft_cum*qout(nseq)
+      q_inflow  = cuft_cum*q_out(nseq)
 !
 !*************************************************************
 !
@@ -85,13 +126,13 @@
 !
 ! Cycle through the cells (nseq) and segments (NSEG)
 !
-      do nc = 1,cells_wr(nr,no_wr)
+!      do nc = 1,cells_wr(nr,no_wr)
 !
 ! Update segment and cell #'s
 !
-        nseq     = nseq + 1  
-        res_seg   = res_seg + 1
-        DONE   = .FALSE.
+!        nseq     = nseq + 1  
+!        res_seg   = res_seg + 1
+!        DONE   = .FALSE.
 !
 ! Accumulate surface areas and volumes of each reservoir cell
 !
@@ -100,20 +141,6 @@
           Vol_sum(nl)  = Vol_sum(nl) + volume(res_nn,res_seg,nl)
         end do
 !
-! Read the forcing file
-!
-        read(30,*) l1
-     &                    ,press(nseq),dbt(nseq)
-     &                    ,qna(nseq),qns(nseq)
-     &                    ,ea(nseq),wind(nseq)
-     &                    ,qin(nseq),qout(nseq)
-!
-!
-! Call energy budget routine
-!
-        Call ENERGY(T_epi,Q_surface,wind_fctr,A,B,nseq)
-        Q_netsurf = Q_netsurf
-     &            + a_surf(res_nn,res_seg,1)*Q_surface/rho_cp
 !
 ! Vertical eddy diffusivity
 !
@@ -121,15 +148,15 @@
 !
         eddy_dff = 0.0
 !
-        Q_dff_epi = Q_dff_epi 
-     &            + eddy_dff*(T_hyp-T_epi)*a_surf(res_nn,res_seg,1)
+        Q_dff_epi = Q_dff_epi                                    & 
+                  + eddy_dff*(T_hyp-T_epi)*a_surf(res_nn,res_seg,1)
 !
-        Q_dff_hyp = Q_dff_hyp 
-     &            + eddy_dff*(T_epi-T_hyp)*a_surf(res_nn,res_seg,2)
+        Q_dff_hyp = Q_dff_hyp                                    & 
+                  + eddy_dff*(T_epi-T_hyp)*a_surf(res_nn,res_seg,2)
 !     Look for a tributary.
 ! 
-          q1      = cuft_cum*qin(nseq)
-          q2      = cuft_cum*qin(nseq)
+          q1      = cuft_cum*q_in(nseq)
+          q2      = cuft_cum*q_in(nseq)
           q_tmp   = 0.0
 !
           Q_advct_sum = 0.0  
@@ -141,9 +168,9 @@
               qq_trib = cuft_cum*q_trib(nr_trib)
               q2      = q2+qq_trib
               q_tmp   = q_tmp + qq_trib
-              Q_advct_sum = Q_advct_sum 
-     &                    + qq_trib*T_trib(nr_trib)
-              T_tmp = T_tmp + qq_trib*T_trib(nr_trib)
+              Q_advct_sum = Q_advct_sum                          &       
+                          + qq_trib*temp_trib(nr_trib)
+              T_tmp = T_tmp + qq_trib*temp_trib(nr_trib)
             end do
             DONE=.TRUE.
           end do
@@ -169,7 +196,6 @@
 ! Calculate residence time
 !
           res_time = Vol_sum(1)/(86400.*q2)
-     
 !
 ! End of the loop that accumlates area, volume, surface transfer and advected sources
 ! from each reservoir cell
@@ -213,38 +239,36 @@
 ! Calculate residence time
 !
         res_time = Vol_sum(1)/(86400.*q_total)
-          q_vert_epi = q_in_res(1) - q_out
-!        if (res_time .gt. 2.0000) then     
 !
 ! Hypolimnion
 !
 
 !
-          TEMP_res(res_nn,2,n2) = TEMP_res(res_nn,2,n1)
-     &          + Q_dff_hyp
-     &          + ((q_vert(2)*TEMP_res(res_nn,1,n1) 
-     &          + Q_advect(2) + Q_advct_trb(2)
-     &          - (q_vert(1) + q_out_res(2))*TEMP_res(res_nn,2,n1))
-     &          / Vol_sum(2))* dt_comp 
+          TEMP_res(res_nn,2,n2) = TEMP_res(res_nn,2,n1)              &
+                + Q_dff_hyp                                          &
+                + ((q_vert(2)*TEMP_res(res_nn,1,n1)                  &
+                + Q_advect(2) + Q_advct_trb(2)                       &
+                - (q_vert(1) + q_out_res(2))*TEMP_res(res_nn,2,n1))  &
+                / Vol_sum(2))* dt_comp 
          if (TEMP_res(1,2,n2) .lt. 0.0) TEMP_res(1,2,n2) = 0.0
 !
 ! Epilimnion
 !
-          TEMP_res(res_nn,1,n2) = TEMP_res(res_nn,1,n1) 
-     &         + ((Q_netsurf
-     &         +  Q_dff_epi
-     &         +  q_vert(1)*TEMP_res(res_nn,2,n1) 
-     &         +  Q_advect(1) + Q_advct_trb(1)
-     &         - (q_vert(2) + q_out_res(1))*TEMP_res(res_nn,1,n1))
-     &        / Vol_sum(1))*dt_comp 
+          TEMP_res(res_nn,1,n2) = TEMP_res(res_nn,1,n1)              &
+               + ((Q_netsurf                                         &
+               +  Q_dff_epi                                          &
+               +  q_vert(1)*TEMP_res(res_nn,2,n1)                    &
+               +  Q_advect(1) + Q_advct_trb(1)                       &
+               - (q_vert(2) + q_out_res(1))*TEMP_res(res_nn,1,n1))   &
+              / Vol_sum(1))*dt_comp                                  
           if (TEMP_res(res_nn,1,n2) .lt. 0.5) TEMP_res(res_nn,1,n2) = 0.5
-          if (TEMP_res(res_nn,2,n2) .gt. TEMP_res(res_nn,1,n2)) 
-     &        TEMP_res(res_nn,2,n2) = TEMP_res(res_nn,1,n2)
+          if (TEMP_res(res_nn,2,n2) .gt. TEMP_res(res_nn,1,n2))      & 
+              TEMP_res(res_nn,2,n2) = TEMP_res(res_nn,1,n2)
 !
 !
 !
-          T_out = (q_out_res(1)*TEMP_res(res_nn,1,n2) 
-     &          +  q_out_res(2)*TEMP_res(res_nn,2,n2)) / q_total
+          T_out = (q_out_res(1)*TEMP_res(res_nn,1,n2)                & 
+                +  q_out_res(2)*TEMP_res(res_nn,2,n2)) / q_total
 !    
 ! 
           nseg = no_celm(nr,no_wr)
@@ -252,12 +276,12 @@
         nnseg = 1
         temp(nr,no_wr,nnseg,n2) = T_out
         xkm_plot=x_dist(nr,no_wr,nseg)*3.048e-04
-        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.1,2f9.1,3E12.3)') 
-     &             time,nyear,nd,ndd,nr,no_wr,nseq,res_nn,nseg
-     &            ,T_out,TEMP_head(nr,no_wr),dbt(nseq)
-     &            ,TEMP_res(res_nn,1,n2),TEMP_res(res_nn,2,n2)
-     &            ,qin(nseq),xkm_plot,res_time,Q_netsurf
-     &            ,Q_dff_epi,Q_dff_hyp
+        write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,f9.1,2f9.1,3E12.3)') & 
+                   time,nyear,ind,ipd,nr,no_wr,nseq,res_nn,nseg          &
+                  ,T_out,TEMP_head(nr,no_wr),dbt(nseq)                  &
+                  ,TEMP_res(res_nn,1,n2),TEMP_res(res_nn,2,n2)          &
+                  ,q_in(nseq),xkm_plot,res_time,Q_netsurf               &
+                  ,Q_dff_epi,Q_dff_hyp
 !      ntmp=n1
 !      n1=n2
 !      n2=ntmp

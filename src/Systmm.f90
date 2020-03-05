@@ -1,20 +1,23 @@
-      SUBROUTINE SYSTMM
+      Subroutine systmm
 !
       use Block_Hydro
       use Block_Network
       use Block_WQ
+      use Block_Energy
 !
-      integer res_nn
-      integer ndmo(12,2)
-! 
-      data lat/47.6/,pi/3.14159/,rfac/304.8/
-      data ndmo/0,31,59,90,120,151,181,212,243,273,304,334
-     &         ,0,31,60,91,121,152,182,213,244,274,305,335/
+      integer                           :: nd_start = 1
+      integer                           :: nseg,nseg_trib,nseq,res_nn
+      logical                           :: Leap_Year
+      integer,dimension(12,2),parameter :: ndmo = reshape((/0,31,59,90,120,151,181,212,243,273,304,334, &
+                                                  0,31,60,91,121,152,182,213,244,274,305,335/),shape(ndmo))
 !
 !
       hour_inc=1./nwpd
-      TEMP_head(:,:) = 0.0
-      T_smth(:)   = 0.0
+!
+! Initialize the headwaters temperature and smoothed air temperature 
+!
+      Temp_head = 0.0
+      T_smth = 0.0
 !
       n1=1
       n2=2
@@ -26,18 +29,15 @@
 !
       write(*,*) 'Start_year ',start_year,start_month,start_day
       write(*,*) 'End_year   ',end_year,end_month,end_day
-      ndays=-Julian(start_year,start_month,start_day)
-     &     +Julian(end_year,end_month,end_day)+1
+      ndays=-Julian(start_year,start_month,start_day)            &
+           +Julian(end_year,end_month,end_day)+1
       write(*,*) 'Number of days ',ndays
 !      
 !     Setup the timing of the simulation
 ! 
-      lp_year=1
-      yr_days=365.
-      if (mod(start_year,4).eq.0) then
-        lp_year=2
-        yr_days=366.
-      end if
+      lp_year = 1
+      if (leap_year(start_year)) lp_year = 2
+!
       day_fract=ndmo(start_month,lp_year)+start_day-1
       day_fract=day_fract/yr_days
       hr_fract=start_hour/(24.*yr_days)
@@ -51,12 +51,13 @@
       do nyear=start_year,end_year
          write(*,*) ' Simulation Year - ',nyear
          nd_year=365
-         lp_year=1
-         if (mod(nyear,4).eq.0) then 
-           nd_year=366
-           lp_year=2
-         end if
+         yr_days=365
          xd_year=nd_year
+!
+         if (leap_year(nyear)) then
+            nd_year = 366
+            yr_days = 366
+         end if
 !
 !        Day loop starts
          if (nyear.eq.start_year) then
@@ -107,9 +108,11 @@
                Select Case(unit_type(nrch,no_wr))
                  case('RIVER')
                    call RIVER(nseg,nseq,nr,no_wr)
+!
                  case('RSRVR')      
                    res_nn = res_nn + 1
                    call RSRVR(nseg,nseq,nrch,no_wr,res_nn)
+!
                End Select
                IS_HEAD = .FALSE. 
 !
@@ -122,7 +125,7 @@
 !
 !
                nseg_trib = no_celm(nr,no_wr_units(nr))
-	       T_trib(nr)=temp(nr,no_wr_units(nr),nseg_trib,n2)
+               Temp_trib(nr)=temp(nr,no_wr_units(nr),nseg_trib,n2)
 !
              end do
              ntmp=n1
@@ -153,13 +156,10 @@
 !
 ! Finish
 !
-  900 Continue
 !
 !
 !     ******************************************************
 !                        return to rmain
 !     ******************************************************
 !
-
-  950 return
-      end
+END SUBROUTINE Systmm

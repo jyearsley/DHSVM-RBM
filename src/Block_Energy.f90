@@ -28,11 +28,11 @@ module Block_Energy
     real, dimension(:), allocatable :: PRESS 
 
 !
-    real, dimension (:), allocatable::mu,alphamu,beta,gmma,smooth_param
+    real                            :: a_smooth,b_smooth
+    real, dimension (:), allocatable:: T_smth,alfa_Mu,beta,gmma,mu
 !
 !   Some important constants
 !
-      integer          :: nwpd
       real,parameter   :: PI = 3.14159 
       real,parameter   :: EVRATE=1.5e-11        ! Lake Hefner coefficient, 1/meters
       real,parameter   :: P_FCTR=64.0,RHO=1000. ! Bowen ratio, water density

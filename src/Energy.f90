@@ -1,21 +1,21 @@
-      SUBROUTINE ENERGY
-     &           (Tsurf,Qsurf,wind_fctr,A,B,ncell)
+      SUBROUTINE ENERGY                        &
+              (Tsurf,Qsurf,wind_fctr,A,B,ncell)
 !
    use Block_Energy
+   use Block_Network
 !
    implicit none
 !
-   integer                     :: i,ncell,nd
-   real                        :: LVP, RB
-   real                        :: A, B, e0, evrate, q_surf, q_conv, q_evap 
-   real                        :: q_ws, td,T_surf
-   real,dimension(2),parameter :: evrte (/1.5e-11,1.5e-11/)
+   integer                     :: i,ncell
+   real                        :: evap_rate,LVP, RB
+   real                        :: A, B, e0
+   real                        :: tsurf,qsurf,wind_fctr
+   real                        :: qconv,qevap,qws,t_kelvin
+   real,dimension(2),parameter :: evrte = (/1.5e-11,1.5e-11/)
    real,dimension(2)           :: q_fit, T_fit
-!     
-      td=nd
 !
       evap_rate=evrte(1)
-      if (nd > 180) evap_rate=evrte(2)
+      if (ind > 180) evap_rate=evrte(2)
       T_fit(1) = Tsurf-1.0
       T_fit(2) = Tsurf+1.0
       if (T_fit(1) .lt. 0.50) T_fit(1) = 0.50
@@ -50,10 +50,10 @@
 ! Linear relationship for equilibrium temperature and rate constant
 !
       A=(q_fit(1)-q_fit(2))/(T_fit(1)-T_fit(2))
-      B=(T_fit(1)*q_fit(2)-T_fit(2)*q_fit(1))
-     .     /(T_fit(1)-T_fit(2))
+      B=(T_fit(1)*q_fit(2)-T_fit(2)*q_fit(1))           &
+       /(T_fit(1)-T_fit(2))
 !
       qsurf=0.5*(q_fit(1)+q_fit(2))
       RETURN
-      END
+      END SUBROUTINE ENERGY
 

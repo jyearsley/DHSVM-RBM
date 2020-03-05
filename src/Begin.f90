@@ -1,143 +1,168 @@
 !
-Subroutine BEGIN(param_file,spatial_file)
+Subroutine BEGIN (param_file)
 !
 use Block_Energy
 use Block_Hydro
 use Block_Network
 use Block_WQ
 !
-implicit none
+!implicit none
 !
-    character (len=200):: param_file,source_file,spatial_file
-    integer:: Julian
+    character (len=200) :: param_file,spatial_file
+    integer             :: Julian
 !
 ! Character variables
 !
-    character (len=8) :: end_date,start_date     
-    character (len=8) :: lat
-    character (len=10):: long
+    character (len=5)   :: wr_type
+    character (len=8)   :: end_date,start_date     
+    character (len=8)   :: lat,dummy_b
+    character (len=10)  :: long
+    character (len=10)  :: dummy_a
+    character (len=11)  :: end_time,start_time
+    character (len=15)  :: dummy
+    character (len=80)  :: header
 !
 ! Integer variables
 !
-integer:: cell_check_tds,cell_check_temp,head_name,trib_cell
-integer:: jul_start,main_stem,nyear1,nyear2,nc,ncell,nseg,seg_inp
-integer:: ns_max_test,node,ncol,nrow,nr,cum_sgmnt
-!
+    integer           :: main_stem ! May not be needed
+    integer           :: res_seg,trib_cell
+    integer           :: jul_start,nyear1,nyear2,nc,ncell,nseg,seg_inp
+    integer           :: n,nnc,ncll,ndde,nd_start,nr,nnr
+    integer           :: nrch,ns_total,no_wru,no_wru_0,total_cells
+    integer           :: nlayers = 2
 ! Logical variables
 !
-logical:: first_cell,source
-logical:: TRIBS_DONE
+    logical           :: Test
 !
 ! Real variables
 !
   real            :: nndlta
-  real            :: rmile0,rmile1,xwpd
+  real            :: xwpd,x_0,x_1
   real            :: tds_inp,temp_inp
   real, parameter :: rho_Cp=1000. ! Units are kcal/m**3/deg K
   real, parameter :: miles_to_ft=5280. ! Convert miles to feet
+!!
+open(unit=90,file=param_file,status='old')
 !
-!
-!
-!   Mohseni parameters, if used
-!
-!
+!     Read header information from control file
+      do n=1,5
+        read(90,*) header
+        write(*,*) 'First file lines ',header
+      end do
 !
 !     Card Group I
 !
-read(90,*) start_date,end_date
-read(start_date,'(i4,2i2)') start_year,start_month,start_day
-read(end_date,  '(i4,2i2)') end_year,end_month,end_day
-nyear1=start_year
-nyear2=end_year
-write(*,'(2(2x,i4,2i2))')  &
- start_year,start_month,start_day,end_year,end_month,end_day
-!
-!     Establish the Julian day for which simulations begin
-!
-jul_start = Julian(start_year,start_month,start_day)
-!
-!
-read(90,*) nreach,flow_cells,heat_cells,source
-!
-! Allocate dynamic arrays
-!
- allocate(tds_head(nreach))
- allocate(temp_head(nreach))
- allocate(ndelta(heat_cells))
- allocate(mu(nreach))
- allocate(alphamu(nreach))
- allocate(beta(nreach))
- allocate(gmma(nreach))
- allocate (smooth_param(nreach))
- allocate(dx(heat_cells))
- allocate(no_celm(nreach))
- no_celm=0
- allocate(no_cells(nreach))
- no_cells=0
- allocate(no_tribs(heat_cells))
- no_tribs=0
- allocate(trib(heat_cells,20))
- trib=0
- allocate(head_cell(nreach))
- allocate (conflnce(heat_cells,20))
- conflnce=0
- allocate(reach_cell(nreach,ns_max))
- allocate(segment_cell(nreach,ns_max))
- allocate(x_dist(nreach,0:ns_max))
- allocate(tds_source(nreach,ns_max))
- allocate(temp_source(nreach,ns_max))
-      SUBROUTINE BEGIN
-      character*11 end_time,start_time
-      character*5 Dummy_B
-      character*5 wr_type
-      character*10 Dummy_A
-      integer head_name,res_seg,trib_cell,first_cell
-      dimension ndmo(12)
-      logical Is_a_Riv,Is_a_Res
-      logical Test
-      INCLUDE 'RBM.fi'
-      data ndmo/0,31,59,90,120,151,181,212,243,273,304,334/
-!      ndelta=2
-!      delta_n=ndelta
-!
-!     Read the starting and ending times and the number of
-!     periods per day of weather data from the forcing file
-! 
-! 
       read(30,*) start_time,end_time,nwpd,nd_start
 !
       write(*,*) start_time,'  ',end_time,nwpd,nd_start
 !
-      read(start_time,'(i4,2i2,1x,i2)') start_year,start_month
-     &                                 ,start_day,start_hour
-      read(end_time,'(i4,2i2,1x,i2)') end_year,end_month
-     &                               ,end_day,end_hour
+      read(start_time,'(i4,2i2,1x,i2)') start_year,start_month   &
+                                       ,start_day,start_hour
+      read(end_time,'(i4,2i2,1x,i2)') end_year,end_month         &
+                                     ,end_day,end_hour
       nyear1=start_year
       nyear2=end_year
-      write(*,*) start_year,start_month,start_day
-     &             ,end_year,end_month,end_day
+      write(*,*) start_year,start_month,start_day                &
+                   ,end_year,end_month,end_day
 !
 !     Establish the Julian day for which simulations begin
 ! 
       jul_start=julian(start_year,start_month,start_day)
 !
-      read(90,*)  nreach
-      write(*,*) "Number of stream reaches - ", nreach
+      read(90,*)  nreach,dummy_a,ncell
+
+!
+!   Incoming short wave radiation, Watts/m**2
+!
+    allocate  (QNS(ncell))
+!
+!   Incoming atmospheric radiation, Watts/m**2
+!
+    allocate  (QNA(ncell))
+!
+!   Air temperature at surface, deg. C
+!
+    allocate  (DBT(ncell))
+!  
+!   Wind speed, m/sec
+!
+    allocate  (WIND(ncell))
+!
+!   Vapor pressure of air at surface, MB
+!
+    allocate  (EA(ncell))
+!
+!   Air pressure at surface, mb
+!
+    allocate   (PRESS(ncell)) 
+!
+! Mohseni parameters
+!
+    allocate   (T_smth(nreach),alfa_Mu(nreach),beta(nreach),gmma(nreach),mu(nreach))
+
+! Block Hydro
+!
+    allocate   (depth(ncell),D_a(ncell),D_b(ncell),D_min(ncell))
+    allocate   (elev(ncell))
+    allocate   (width(ncell))
+    allocate   (u(ncell),U_a(ncell),U_b(ncell),U_min(ncell))
+    allocate   (dt(ncell))
+    allocate   (dx(ncell))
+    allocate   (x_dist(ncell,10,0:100))
+!
+! Reservoir characteristics
+!
+    allocate   (Kappa(10))
+    allocate   (A_surf(10,10,nlayers)           &  
+               ,Volume(10,10,nlayers))
+!
+! Flows
+!
+    allocate   (Q_in(ncell))
+    allocate   (Q_trib(nreach))
+    allocate   (Q_out(ncell))
+    allocate   (Q_diff(ncell))
+!
+    allocate   (Q_in_seg(ncell,100))
+    allocate   (Q_out_seg(ncell,100))
+    allocate   (Q_nps(ncell,100))
+!
+! Network variables
+!
+    allocate  (first_seg(ncell))
+    allocate  (ndelta(ncell),no_tribs(ncell))
+    allocate  (no_cells(nreach),no_wr_units(nreach))
+!    allocate  (nstrt_elm(100),no_dt(100))
+!
+    allocate (head_cell(nreach,10),res_no(nreach,50))
+    allocate (no_celm(nreach,50),upstrm_cell(nreach,50))
+    allocate (cells_wr(nreach,50),unit_type(nreach,50))
+    allocate (trib(ncell,50))
+    allocate (segment_cell(nreach,50,100))
+!
+! Water quality variables
+!
+    allocate (temp(nreach,50,-2:100,2))
+    allocate (temp_res(50,nlayers,2))
+    allocate (temp_head(nreach,50))
+    allocate (temp_trib(nreach))
+    allocate (temp_nps(50,50))
+    allocate (temp_source(50,50))
+!
+no_tribs=0
+trib=0
+temp_trib(:)=5.0
+Temp_res(:,:,:) = 2.0
+do n=1,nreach
+ write(*,*) temp_trib(n)
+end do
+!
+      write(*,*) "Number of stream reaches - ", nreach,ncell
       read(40,*) Test,a_smooth
       write(*,*) Test,a_smooth, nreach
       b_smooth=1.- a_smooth
       do nr=1, nreach
-        read(40,*) nnr,alf_Mu(nr),beta(nr),gmma(nr),mu(nr)
-        write(*,*) nnr,alf_Mu(nr),beta(nr),gmma(nr),mu(nr)
-!
-      end do
-!
-! Iniialize the upstream cell index
-!
-      do n = 1,500
-        do nn = 1,50
-          upstrm_cell(n,nn) = -1
-        end do
+        read(40,*) nnr,alfa_Mu(nr),beta(nr),gmma(nr),mu(nr)
       end do
 !
 !     Start reading the reach date and initialize the reach index, NR
@@ -148,7 +173,10 @@ read(90,*) nreach,flow_cells,heat_cells,source
       no_res   = 0
       ns_total = 0
       nseg     = 0
-  100 continue
+!
+     upstrm_cell = -1
+!
+!  100 continue
 !
 !     Card Group IIb. Reach characteristics
 !
@@ -160,7 +188,7 @@ read(90,*) nreach,flow_cells,heat_cells,source
 !
 !     Initialize NSEG, the total number of segments in this reach
       nseg=0
-      write(*,*) ' Starting to read reach ', nrch
+!      write(*,*) ' Starting to read reach ', nrch
 !
 !     Read the number of cells in this reach, the headwater #,
 !     the number of the cell where it enters the next higher order stream,
@@ -168,8 +196,9 @@ read(90,*) nreach,flow_cells,heat_cells,source
 !     the river mile of the headwaters.
 !
 !
-        read(90,*) Dummy_A,no_cells( nrch)
-     &            ,Dummy_A,main_stem( nrch),Dummy_A,trib_cell
+        read(90,*) dummy_a,no_cells(nrch)                          &
+                  ,dummy_a,main_stem,dummy_b,trib_cell
+write(*,*) 'Trib cell ',trib_cell
 !
 !     If this is reach that is tributary to cell TRIB_CELL, give it the
 !     pointer TRIB(TRIB_CELL) the index of this reach for further use.
@@ -194,8 +223,6 @@ read(90,*) nreach,flow_cells,heat_cells,source
             write(*,*) 'Mismatch in Leopold file',ncll,ncell
           end if  
           read(50,*) D_a(ncell),D_b(ncell),D_min(ncell)
-
-
 !
 !     The headwaters index for each cell in this reach is given
 !     in the order the cells are read*dt_calc/(z*rfac)
@@ -203,10 +230,11 @@ read(90,*) nreach,flow_cells,heat_cells,source
 !     Card Type 3. Cell indexing #, Node # Row # Column Lat Long RM
 !
 
-          read(90,*) Dummy_B,nnc,Dummy_B,node(nnc)
-     &              ,Dummy_B,x_0,Dummy_B,x_1
-     &              ,Dummy_B,elev( nrch),ndelta(ncell)
-     &             ,Dummy_B,no_wru,wr_type
+          read(90,'(a3,i8,1x,a4,i6,1x,a3,f12.0,1x,a3,f12.0,1x,a9,f5.0,i3,1x,a4,i2,1x,a5)')  &
+                   dummy,nnc,dummy,ndde,                          &
+                   dummy,x_0,dummy,x_1,                           &
+                   dummy,z,ndelta(ncell),                         &
+                   dummy,no_wru,wr_type
 !
           unit_type(nrch,no_wru) = wr_type
 !
@@ -238,6 +266,8 @@ read(90,*) nreach,flow_cells,heat_cells,source
             no_wru_0 = no_wru
           end if 
           if (wr_type .eq. 'RSRVR') then
+             nseg = 1 !Temporary value while debugging JRY 02/28/2020
+             first_seg(ncell) = nseg
              res_seg = res_seg + 1
              no_celm(nrch,no_wru) = 1
 !            res_no(nrch,no_wru)   = no_res
@@ -245,34 +275,34 @@ read(90,*) nreach,flow_cells,heat_cells,source
              volume(no_res,res_seg,2) = U_b(ncell)
              a_surf(no_res,res_seg,1) = D_a(ncell)
              a_surf(no_res,res_seg,2) = D_b(ncell)
-             Kappa(no_res)         = D_min(ncell)
-            write(85,*) wr_type,no_wru,nseg
-     &                 ,upstrm_cell(nrch,no_wru)
-     &                 ,ncell,cells_wr(nrch,no_wru)
-     &                 ,segment_cell(nrch,no_wru,nseg)
-     &                 ,x_dist(nrch,no_wru,nseg)
-     &                 ,x_dist(nrch,no_wru,nseg-1),x_1,x_0,dx(ncell)                        
-                    cells_wr(nrch,no_wru) 
-     &                   = cells_wr(nrch,no_wru) + 1 
-          else             
+             Kappa(no_res)            = D_min(ncell)
+             cells_wr(nrch,no_wru) = cells_wr(nrch,no_wru) + 1 
+            write(85,*) wr_type,nrch,no_wru,nseg                    &
+                       ,upstrm_cell(nrch,no_wru)                   &
+                       ,ncell,cells_wr(nrch,no_wru)                &
+                       ,segment_cell(nrch,no_wru,nseg)             
+          else     
+write(85,*)        
             do ncll = 1,ndelta(ncell)
               nseg = nseg + 1
+              if (ncll .eq. 1) first_seg(ncell) = nseg
               no_celm(nrch,no_wru) = no_celm(nrch,no_wru)+1
               segment_cell(nrch,no_wru,nseg)=ncell
-              dx(ncell)=(x_1-x_0)/ndelta(ncell)
-              x_dist(nrch,no_wru,nseg) 
-     &        = x_dist(nrch,no_wru,nseg-1)-dx(ncell)
+              nndlta = ndelta(ncell)
+              dx(ncell)=(x_1-x_0)/nndlta
+              x_dist(nrch,no_wru,nseg) = x_dist(nrch,no_wru,nseg-1)-dx(ncell)
+            write(85,*) wr_type,nrch,no_wru,first_seg(ncell),nseg  &
+                       ,upstrm_cell(nrch,no_wru)                   &
+                       ,ncell,cells_wr(nrch,no_wru)                &
+                       ,segment_cell(nrch,no_wru,nseg)             &
+                       ,x_dist(nrch,no_wru,nseg)                   &
+                       ,x_dist(nrch,no_wru,nseg-1),x_1,x_0,dx(ncell)            
            end do
 !
-           cells_wr(nrch,no_wru) 
-     &                   = cells_wr(nrch,no_wru) + 1 
-          end if
-          
-                   
+           cells_wr(nrch,no_wru) = cells_wr(nrch,no_wru) + 1 
+          end if 
 !
-
-  200 continue
-! 
+!  200 continue 
 !   
         no_wr_units(nrch) = no_wru
 !
@@ -282,7 +312,7 @@ read(90,*) nreach,flow_cells,heat_cells,source
 !	go to 100
 
       nrch = nrch + 1
-
+!
       end do
 !
 ! Some final constants
@@ -290,13 +320,11 @@ read(90,*) nreach,flow_cells,heat_cells,source
       nrch= nreach
       xwpd=nwpd
       dt_comp=86400./xwpd
-
 !
 !     ******************************************************
 !                         Return to RMAIN
 !     ******************************************************
 !
-900 continue
 !
-!
+      return
 end subroutine BEGIN
