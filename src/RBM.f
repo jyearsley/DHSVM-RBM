@@ -95,7 +95,7 @@ c     Read header information from control file
       character*5 Dummy_B
       character*5 wr_type
       character*10 Dummy_A
-      integer head_name,res_seg,trib_cell,first_cell
+      integer head_name,res_seg,trib_cell,first_cell,total_cells
       dimension ndmo(12)
       logical Is_a_Riv,Is_a_Res
       logical Test
@@ -125,7 +125,7 @@ c     Establish the Julian day for which simulations begin
 c 
       jul_start=julian(start_year,start_month,start_day)
 c
-      read(90,*)  nreach
+      read(90,*)  nreach,Dummy_A,total_cells
       write(*,*) "Number of stream reaches - ", nreach
       read(40,*) Test,a_smooth
       write(*,*) Test,a_smooth, nreach
@@ -302,7 +302,7 @@ c  500	continue
   900 END
       SUBROUTINE SYSTMM
 c
-      integer res_nn
+      integer l1,nseq,res_nn
       integer ndmo(12,2)
 c 
 
@@ -319,6 +319,15 @@ c
       n1=1
       n2=2
       nobs=0
+!
+! Read first set of meteorologic forcingx
+!
+      do nseq = 1,ncell
+        read(30,*) l1
+     &                    ,press(nseq,n1),dbt(nseq,n1)
+     &                    ,qna(nseq,n1),qns(nseq,n1)
+     &                    ,ea(nseq,n1),wind(nseq,n1)
+     &                    ,qin(nseq,n1),qout(nseq,n1)
 !
 !     Initialize the day counter used for calculating the
 !     record position for direct access files
@@ -464,7 +473,9 @@ c
   950 return
       end
       SUBROUTINE ENERGY
-     &           (Tsurf,Qsurf,wind_fctr,A,B,ncell)
+C     &           (Tsurf,Qsurf,wind_fctr,A,B,ncell)
+     &           (ncell,Tsurf,
+C
       REAL*4 Ksw,LVP
       real*4 q_fit(2),T_fit(2),evrte(2),evrate
       INCLUDE 'RBM.fi'
@@ -516,8 +527,39 @@ c
      .     /(T_fit(1)-T_fit(2))
 c
       qsurf=0.5*(q_fit(1)+q_fit(2))
+C
+     C
       RETURN
       END
+C
+      SUBROUTINE RK4(Y,DYDT,X,H,YOUT)
+C      INTEGER,PARAMETER             :: NMAX=10
+C      REAL,DIMENSION(:),ALLOCATABLE :: Y(N),DYDT(N),YOUT(N),YT(NMAX),DYT(NMAX),DYM(NMAX)
+C      ALLOCATE (Y(N),DYDT(N),YOUT(N),YT(NMAX),DYT(NMAX),DYM(NMAX))
+C
+      INTEGER,PARAMETER              :: N = 1                     
+      REAL,DIMENSION(1)              :: Y,DYDT,YOUT,YT,DYT,DYM                           ::
+      HH=H*0.5
+      H6=H/6.
+      XH=X+HH
+C
+      DO 11 I=1,N
+        YT(I)=Y(I)+HH*DYDT(I)
+11    CONTINUE
+      CALL DERIVS(XH,YT,DYT)
+      DO 12 I=1,N
+        YT(I)=Y(I)+HH*DYT(I)
+12    CONTINUE
+      CALL DERIVS(XH,YT,DYM)
+      DO 13 I=1,N
+        YT(I)=Y(I)+H*DYM(I)
+        DYM(I)=DYT(I)+DYM(I)
+13    CONTINUE
+      CALL DERIVS(X+H,YT,DYT)
+      DO 14 I=1,N
+        YOUT(I)=Y(I)+H6*(DYDT(I)+DYT(I)+2.*DYM(I))
+14    CONTINUE
+      END SUBFROUTINE RK4
 C
 c
 c    Subroutine that simulates water temperature in advective system
@@ -544,10 +586,10 @@ c
         l_cell = l_cell+1
         nseq  = nseq + 1
         read(30,*) l1
-     &                    ,press(nseq),dbt(nseq)
-     &                    ,qna(nseq),qns(nseq)
-     &                    ,ea(nseq),wind(nseq)
-     &                    ,qin(nseq),qout(nseq)
+     &                    ,press(nseq,n2),dbt(nseq,n2)
+     &                    ,qna(nseq,n2),qns(nseq,n2)
+     &                    ,ea(nseq,n2),wind(nseq,n2)
+     &                    ,qin(nseq,n2),qout(nseq,n2)
       if (l1 .ne. nseq) then
          write(*,*) 'Input file error at cell - ',l1,nseq
          stop
@@ -757,6 +799,12 @@ c
 c Calculate the transfer of energy across the air-water interface
 c
           call energy(t0,QSURF,wind_fctr,A,B,nncell)
+C
+c
+          time0 = 0.0
+          T00 = T0
+          CALL RK4(nncell,T00,QSURF,time0,dt_calc,T0)
+c
 c
 c Bed conduction
 c
@@ -837,7 +885,7 @@ c Write output to unit 20
 c
         write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,4f9.2,2f9.1)') 
      &             time,nyear_out,ndout,ndd,nr,no_wr,ncell,ns,nseg
-     &            ,t0,T_head(nr,no_wr),dbt(ncell)
+     &            ,t0,T_head(nr,no_wr),dbt(ncell,n1)
      &            ,depth(ncell),u(ncell),qin(ncell),q1,q2
      &            ,lat_flow,xkm_plot,qsw_out
 c
@@ -960,8 +1008,8 @@ c
 c Read the forcing file
 c
         read(30,*) l1
-     &                    ,press(nseq),dbt(nseq)
-     &                    ,qna(nseq),qns(nseq)
+     &                    ,press(nseq,n1),dbt(nseq,n1)
+     &                    ,qna(nseq),qns(nseq,n1)
      &                    ,ea(nseq),wind(nseq)
      &                    ,qin(nseq),qout(nseq)
 c

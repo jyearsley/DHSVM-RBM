@@ -51,8 +51,8 @@ C
 C     BLOCKK.COM - Contains arrays with meteorological data
 C
       COMMON/BLOCK8/
-     & QNS(500),QNA(500),DBT(500),WIND(500)
-     & ,EA(500),PRESS(500),PF,PHPER
+     & QNS(500,2),QNA(500,2),DBT(500,2),WIND(500,2)
+     & ,EA(500,2),PRESS(500,2),PF,PHPER
      & ,alf_Mu(500),beta(500),gmma(500),mu(500)
      & ,T_head(500,10),T_smth(500)
 c     & ,T_res(500,2,2)
