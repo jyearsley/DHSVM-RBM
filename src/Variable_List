@@ -1,0 +1,64 @@
+!   Energy budget variables
+!
+!   Incoming short wave radiation, Watts/m**2
+    real, dimension(no_cells_ttl), allocatable :: QNS       Alloc.f90 Block_Energy.f90 Energy.f90 Reservoir.f90 River.f90
+!
+!   Incoming atmospheric radiation, Watts/m**2
+    real, dimension(no_cells_ttl), allocatable :: QNA      Alloc.f90 Block_Energy.f90 Energy.f90 Reservoir.f90 River.f90
+!
+!   Air temperature at surface, deg. C
+    real, dimension(no_cells_ttl), allocatable :: DBT      Alloc.f90 Block_Energy.f90 Energy.f90 Head_Temp.f90 Reservoir.f90 River.f90
+!  
+!   Wind speed, m/sec
+    real, dimension(no_cells_ttl), allocatable :: WIND     Alloc.f90 Block_Energy.f90 Energy.f90 Reservoir.f90 River.f90
+!
+!   Vapor pressure of air at surface, MB
+    real, dimension(no_cells_ttl), allocatable :: EA       Alloc.f90 Block_Energy.f90 Energy.f90 Reservoir.f90 River.f90
+!
+!   Air pressure at surface, mb
+    real, dimension(no_cells_ttl), allocatable :: PRESS    Alloc.f90 Block_Energy.f90 Energy.f90 Reservoir.f90 River.f90
+!
+    real, dimension (nhead), allocatable:: mu,alpha_mu,beta,gmma,smooth_param
+!
+!   Some important constants
+!
+      integer          :: nwpd                              Begin.f90 Block_Network.f90 River.f90 Systmm.f90
+        
+      real,parameter   :: PI = 3.14159                      Block_Energy.f90 functions.f90 Reservoir.f90 River.f90 Systmm.f90
+      real,parameter   :: EVRATE=1.5e-11                    Block_Energy.f90 Energy.f90 ! Lake Hefner coefficient, 1/meters
+      real,parameter   :: P_FCTR=64.0                       Block_Energy.f90 Energy.f90 ! Bowen ra tio
+      real,parameter   :: RHO=1000.                         Block_Energy.f90 Energy.f90 functionsf90 ! water density, kg/meterS**3
+      real,parameter   :: RFAC=4.184e6                      Alloc.f90 Begin.f90 Block_Energy.f90 Energy.f90 Reservoir.f90 River.f90 Systmm.f90 ! rho/Cp kg/meter**3/Joules/kg/Deg K      
+    integer, dimension(200):: no_dt,nstrt_elm
+    real, dimension(200)   :: dt_part,x_part
+!
+! Hydraulic characteristics
+!
+    real, dimension(:),     allocatable  :: depth,D_a,D_b,D_min Alloc.f90 Block_Hydro.f90 River.f90
+    real, dimension(:),     allocatable  :: elev                Alloc.f90 Block_Hydro.f90 River.f90
+    real, dimension(:),     allocatable  :: width               Alloc.f90 Block_Hydro.f90 (not used in this version)
+    real, dimension(:),     allocatable  :: u,U_a,U_b,U_min     Alloc.f90 Block_Hydro.f90 River.f90
+    real, dimension(:),     allocatable  :: dt                  Alloc.f90 Begin.f90 Block_Hydro.f90 Block_Network.f90 Reservoir.f90 River.f90 Systmm.f90
+    real, dimension(:),     allocatable  :: dx
+    real, dimension(:,:,:), allocatable  :: x_dist
+!
+! Reservoir characteristics
+!
+    real, dimension(:), allocatable      :: Kappa
+    real, dimension(:,:,:), allocatable  :: A_surf,Volume
+!
+! Flows
+!
+    real, dimension(:),     allocatable  :: Q_in
+    real, dimension(:,:),   allocatable  :: Q_in_seg
+    real, dimension(:),     allocatable  :: Q_trib
+    real, dimension(:),     allocatable  :: Q_out
+    real, dimension(:,:),   allocatable  :: Q_out_seg
+    real, dimension(:),     allocatable  :: Q_diff
+    real, dimension(:,:),   allocatable  :: Q_nps
+
+
+!  Parameters
+!
+    real,parameter          :: cuft_cum = 0.028318 ! Cubic feet to cubic meters
+!

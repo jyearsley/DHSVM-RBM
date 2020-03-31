@@ -532,35 +532,6 @@ C
       RETURN
       END
 C
-      SUBROUTINE RK4(Y,DYDT,X,H,YOUT)
-C      INTEGER,PARAMETER             :: NMAX=10
-C      REAL,DIMENSION(:),ALLOCATABLE :: Y(N),DYDT(N),YOUT(N),YT(NMAX),DYT(NMAX),DYM(NMAX)
-C      ALLOCATE (Y(N),DYDT(N),YOUT(N),YT(NMAX),DYT(NMAX),DYM(NMAX))
-C
-      INTEGER,PARAMETER              :: N = 1                     
-      REAL,DIMENSION(1)              :: Y,DYDT,YOUT,YT,DYT,DYM                           ::
-      HH=H*0.5
-      H6=H/6.
-      XH=X+HH
-C
-      DO 11 I=1,N
-        YT(I)=Y(I)+HH*DYDT(I)
-11    CONTINUE
-      CALL DERIVS(XH,YT,DYT)
-      DO 12 I=1,N
-        YT(I)=Y(I)+HH*DYT(I)
-12    CONTINUE
-      CALL DERIVS(XH,YT,DYM)
-      DO 13 I=1,N
-        YT(I)=Y(I)+H*DYM(I)
-        DYM(I)=DYT(I)+DYM(I)
-13    CONTINUE
-      CALL DERIVS(X+H,YT,DYT)
-      DO 14 I=1,N
-        YOUT(I)=Y(I)+H6*(DYDT(I)+DYT(I)+2.*DYM(I))
-14    CONTINUE
-      END SUBFROUTINE RK4
-C
 c
 c    Subroutine that simulates water temperature in advective system
 c
@@ -799,12 +770,6 @@ c
 c Calculate the transfer of energy across the air-water interface
 c
           call energy(t0,QSURF,wind_fctr,A,B,nncell)
-C
-c
-          time0 = 0.0
-          T00 = T0
-          CALL RK4(nncell,T00,QSURF,time0,dt_calc,T0)
-c
 c
 c Bed conduction
 c
