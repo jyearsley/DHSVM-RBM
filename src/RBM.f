@@ -32,8 +32,8 @@ C
       integer iargc
       integer numarg
  
-!     Command line input
-!
+c     Command line input
+c
       numarg = iargc ( )
       if (numarg .lt. 2) then
         write (*,*) 'Too few arguments were given'
@@ -71,20 +71,20 @@ c     Read header information from control file
       do n=1,5
         read(90,*)
       end do
-!
-!     Call systems programs to get started
-!
-!     SUBROUTINE BEGIN reads control file, sets up topology and
-!     important properties of reaches
+c
+C     Call systems programs to get started
+C
+C     SUBROUTINE BEGIN reads control file, sets up topology and
+C     important properties of reaches
       write(*,*) 'Calling BEGIN'
       CALL BEGIN
-!
-!     SUBROUTINE SYSTMM performs the simulations
-!
+C
+C     SUBROUTINE SYSTMM performs the simulations
+C
       CALL SYSTMM
-!
-!     Close files after simulation is complete
-!
+C
+C     Close files after simulation is complete
+C
       write(*,*) ' Closing files after simulation'
       CLOSE(30)
       CLOSE(90)
@@ -95,7 +95,7 @@ c     Read header information from control file
       character*5 Dummy_B
       character*5 wr_type
       character*10 Dummy_A
-      integer head_name,res_seg,trib_cell,first_cell,total_cells
+      integer head_name,res_seg,trib_cell,first_cell
       dimension ndmo(12)
       logical Is_a_Riv,Is_a_Res
       logical Test
@@ -125,7 +125,7 @@ c     Establish the Julian day for which simulations begin
 c 
       jul_start=julian(start_year,start_month,start_day)
 c
-      read(90,*)  nreach,Dummy_A,total_cells
+      read(90,*)  nreach
       write(*,*) "Number of stream reaches - ", nreach
       read(40,*) Test,a_smooth
       write(*,*) Test,a_smooth, nreach
@@ -292,17 +292,17 @@ c  500	continue
       nrch= nreach
       xwpd=nwpd
       dt_comp=86400./xwpd
-!
-!     ******************************************************
-!                         Return to RMAIN
-!     ******************************************************
-!
-!
+C
+C     ******************************************************
+C                         Return to RMAIN
+C     ******************************************************
+C
+c
       RETURN
   900 END
       SUBROUTINE SYSTMM
 c
-      integer l1,nseq,res_nn
+      integer res_nn
       integer ndmo(12,2)
 c 
 
@@ -310,8 +310,8 @@ c
       data lat/47.6/,pi/3.14159/,rfac/304.8/
       data ndmo/0,31,59,90,120,151,181,212,243,273,304,334
      &         ,0,31,60,91,121,152,182,213,244,274,305,335/
-!
-!
+c
+c
       hour_inc=1./nwpd
       T_head(:,:) = 0.0
       T_smth(:)   = 0.0
@@ -319,28 +319,19 @@ c
       n1=1
       n2=2
       nobs=0
-!
-! Read first set of meteorologic forcingx
-!
-      do nseq = 1,ncell
-        read(30,*) l1
-     &                    ,press(nseq,n1),dbt(nseq,n1)
-     &                    ,qna(nseq,n1),qns(nseq,n1)
-     &                    ,ea(nseq,n1),wind(nseq,n1)
-     &                    ,qin(nseq,n1),qout(nseq,n1)
-!
-!     Initialize the day counter used for calculating the
-!     record position for direct access files
-!
-!
+c
+c     Initialize the day counter used for calculating the
+c     record position for direct access files
+c
+c
       write(*,*) 'Start_year ',start_year,start_month,start_day
       write(*,*) 'End_year   ',end_year,end_month,end_day
       ndays=-Julian(start_year,start_month,start_day)
      &     +Julian(end_year,end_month,end_day)+1
       write(*,*) 'Number of days ',ndays
-!      
-!     Setup the timing of the simulation
-! 
+c      
+c     Setup the timing of the simulation
+c 
       lp_year=1
       yr_days=365.
       if (mod(start_year,4).eq.0) then
@@ -366,8 +357,8 @@ c
            lp_year=2
          end if
          xd_year=nd_year
-!
-!        Day loop starts
+c
+c        Day loop starts
          if (nyear.eq.start_year) then
            nd1=ndmo(start_month,lp_year)+start_day
          else
@@ -378,18 +369,18 @@ c
          else
            nd2=nd_year
          end if
-!
-!
+c
+c
          DO ND=nd1,nd2
-!
-!     Start the numbers of days-to-date counter
+c
+c     Start the numbers of days-to-date counter
            ndays=ndays+1
-!
-!     Daily period loop starts
+c
+c     Daily period loop starts
            DO ndd=nd_start,nwpd 
-!
-!     Begin reach computations
-!      
+c
+c     Begin reach computations
+c      
              ind=nd
              ipd=ndd
              day=nd
@@ -473,9 +464,7 @@ c
   950 return
       end
       SUBROUTINE ENERGY
-C     &           (Tsurf,Qsurf,wind_fctr,A,B,ncell)
-     &           (ncell,Tsurf,
-C
+     &           (Tsurf,Qsurf,wind_fctr,A,B,ncell)
       REAL*4 Ksw,LVP
       real*4 q_fit(2),T_fit(2),evrte(2),evrate
       INCLUDE 'RBM.fi'
@@ -527,8 +516,6 @@ c
      .     /(T_fit(1)-T_fit(2))
 c
       qsurf=0.5*(q_fit(1)+q_fit(2))
-C
-     C
       RETURN
       END
 C
@@ -557,10 +544,10 @@ c
         l_cell = l_cell+1
         nseq  = nseq + 1
         read(30,*) l1
-     &                    ,press(nseq,n2),dbt(nseq,n2)
-     &                    ,qna(nseq,n2),qns(nseq,n2)
-     &                    ,ea(nseq,n2),wind(nseq,n2)
-     &                    ,qin(nseq,n2),qout(nseq,n2)
+     &                    ,press(nseq),dbt(nseq)
+     &                    ,qna(nseq),qns(nseq)
+     &                    ,ea(nseq),wind(nseq)
+     &                    ,qin(nseq),qout(nseq)
       if (l1 .ne. nseq) then
          write(*,*) 'Input file error at cell - ',l1,nseq
          stop
@@ -850,7 +837,7 @@ c Write output to unit 20
 c
         write(20,'(f11.5,i5,1x,2i4,1x,5i5,1x,5f7.2,4f9.2,2f9.1)') 
      &             time,nyear_out,ndout,ndd,nr,no_wr,ncell,ns,nseg
-     &            ,t0,T_head(nr,no_wr),dbt(ncell,n1)
+     &            ,t0,T_head(nr,no_wr),dbt(ncell)
      &            ,depth(ncell),u(ncell),qin(ncell),q1,q2
      &            ,lat_flow,xkm_plot,qsw_out
 c
@@ -973,8 +960,8 @@ c
 c Read the forcing file
 c
         read(30,*) l1
-     &                    ,press(nseq,n1),dbt(nseq,n1)
-     &                    ,qna(nseq),qns(nseq,n1)
+     &                    ,press(nseq),dbt(nseq)
+     &                    ,qna(nseq),qns(nseq)
      &                    ,ea(nseq),wind(nseq)
      &                    ,qin(nseq),qout(nseq)
 c
@@ -1200,8 +1187,8 @@ c     polynomials.  FUNCTION is SUBROUTINE POLINT from
 c     Numerial Recipes
 c
       FUNCTION tntrp(XA,YA,X,n)
-!      PARAMETER (N=4)
-!      DIMENSION XA(N),YA(N),C(N),D(N)
+c      PARAMETER (N=4)
+c      DIMENSION XA(N),YA(N),C(N),D(N)
       DIMENSION XA(4),YA(4),C(4),D(4)
       NS=1
       DIF=ABS(X-XA(1))
@@ -1240,12 +1227,12 @@ c
       END
 c
       INTEGER FUNCTION Julian (YEAR,MONTH,DAY)
-!
-!---COMPUTES THE JULIAN DATE (JD) GIVEN A GREGORIAN CALENDAR
-!   DATE (YEAR,MONTH,DAY).
-!
+C
+C---COMPUTES THE JULIAN DATE (JD) GIVEN A GREGORIAN CALENDAR
+C   DATE (YEAR,MONTH,DAY).
+C
       INTEGER YEAR,MONTH,DAY,I,J,K
-!
+C
 
       I= YEAR
       J= MONTH
@@ -1255,7 +1242,7 @@ C
       Julian=
      1   K-32075+1461*(I+4800+(J-14)/12)/4+367*(J-2-(J-14)/12*12)
      2  /12-3*((I+4900+(J-14)/12)/100)/4
-!
+C
 
       RETURN
       END
