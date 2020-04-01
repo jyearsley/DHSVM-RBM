@@ -200,6 +200,7 @@
 !
           qdot=(qsurf)/(z*rfac) 
           T0 = T0+qdot*dt_calc
+if (nrch .eq. 40) write(81,*) 'qsurf,z,dt_calc',qsurf,z,nm,nncell,nseg,dt_total,dt_calc
           t00 = t0
           qd_calc = qdot*dt_calc 
           if(t0.lt.0.0) t0=0.0

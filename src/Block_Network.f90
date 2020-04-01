@@ -17,7 +17,7 @@ Module Block_Network
 !
 ! Integer variables 
 !
-    integer           :: n1,n2,nhead,nreach,no_res
+    integer           :: n1,n2,nhead,nrch,nreach,no_res
     integer           :: no_cells_ttl
     integer           :: ind,ipd,nd_year,ndays,nyear,nwpd
     integer           :: start_year,start_month,start_day,start_hour

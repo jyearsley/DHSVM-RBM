@@ -28,7 +28,7 @@ use Block_WQ
     integer           :: res_seg,trib_cell
     integer           :: jul_start,nyear1,nyear2,nc,ncell,nseg,seg_inp
     integer           :: n,nnc,ncll,ndde,nd_start,nr,nnr
-    integer           :: nrch,ns_total,no_wru,no_wru_0,total_cells
+    integer           :: ns_total,no_wru,no_wru_0,total_cells
     integer           :: nlayers = 2
 ! Logical variables
 !
@@ -257,7 +257,6 @@ write(*,*) 'Trib cell ',trib_cell
 !
             if (wr_type .eq. 'RSRVR') then
               no_res = no_res + 1
-              write(81,*) 'Reservoir _Number ',no_res
               res_seg = 0
             end if
 !

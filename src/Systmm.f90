@@ -48,6 +48,7 @@
 !     Year loop starts
 !
 !
+end_year =1996
       do nyear=start_year,end_year
          write(*,*) ' Simulation Year - ',nyear
          nd_year=365
