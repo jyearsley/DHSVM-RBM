@@ -233,7 +233,6 @@ c If this is a reservoir, update reservoir index
 c
             if (wr_type .eq. 'RSRVR') then
               no_res = no_res + 1
-              write(81,*) 'Reservoir _Number ',no_res
               res_seg = 0
             end if
 c
