@@ -52,40 +52,46 @@ int main (int argc, char** argv)
  int junki;
  float junkf;
  char junkc[350];
- int nskip;        /* header line number in stream map file */
+ int nskip = 9;        /* header line number in stream map file */
  FILE *fmap,*fnetwork,*fconv;
  int NsegDummy;
 
-if (argc != 6 ){
+if (argc != 3 ){
   printf("Command line arguments: enter <mapfile> <networkfile> <output directory> <Nseg> <skip>\n");
   printf("skip = lines of the header in stream map file\n");
   exit (0);
  }
- sscanf(argv[4],"%d", &Nseg);
- sscanf(argv[5],"%d", &nskip);
+ sscanf(argv[1],"%d", &Nseg);
+/* sscanf(argv[5],"%d", &nskip); */
 
  Nseg++; // Nseg is 1 greater than the original hereafter
  NsegDummy = Nseg + 400;  //Increase the dimension of the matrix in case that streamnetwork is mannually 
                           //modified to remove the redundant outlet "-1".
  
  /*handle file names */
- fmap = fopen(argv[1], "r");
+/* fmap = fopen(argv[1], "r"); */
+ fmap = fopen("stream.map.dat", "r");
  if (fmap == NULL) {
-   fprintf(stderr,"NULL  %s \n", argv[1]); 
+/*   fprintf(stderr,"NULL  %s \n", argv[1]); */ 
+   fprintf(stderr,"NULL  %s \n", "stream.map.dat"); 
    exit(-1);
  }
- fprintf(stdout, " %s opened for reading\n", argv[1]);
+/* fprintf(stdout, " %s opened for reading\n", argv[1]); */
+ fprintf(stdout, " %s opened for reading\n", "stream.map.dat");
 
- fnetwork = fopen(argv[2], "r");
- if (fmap == NULL) {
-   fprintf(stderr,"NULL  %s \n", argv[2]); 
+/*  fnetwork = fopen(argv[2], "r"); */
+  fnetwork = fopen("stream.network.dat", "r");
+ if (fnetwork == NULL) {
+/*   fprintf(stderr,"NULL  %s \n", argv[2]); */ 
+    fprintf(stderr,"NULL  %s \n", "stream.network.dat");
    exit(-1);
  }
- fprintf(stdout, " %s opened for reading\n", argv[2]);
+/* fprintf(stdout, " %s opened for reading\n", argv[2]); */
+ fprintf(stdout, " %s opened for reading\n", "stream.network.dat");
 
- sprintf(outputdir,argv[3]);
+ sprintf(outputdir,argv[2]);
  strcpy(convergence, outputdir);
- strcat(convergence, "convergence.txt");
+ strcat(convergence, ".dir");
  fprintf(stdout, " %s opened for writing \n", convergence);
 
  /* allocate */
