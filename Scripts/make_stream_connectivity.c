@@ -57,7 +57,7 @@ int main (int argc, char** argv)
  int NsegDummy;
 
 if (argc != 3 ){
-  printf("Command line arguments: enter <mapfile> <networkfile> <output directory> <Nseg> <skip>\n");
+  printf("Command line arguments: enter <Nseg> <output file> \n");
   printf("skip = lines of the header in stream map file\n");
   exit (0);
  }
