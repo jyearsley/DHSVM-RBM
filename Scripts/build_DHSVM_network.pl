@@ -22,7 +22,9 @@ $forcing_file=$project.'.forcing';
 #
 print "Input parameters for initial (headwaters) temperatures \n";
 print "and hydraulic parameters, depth and stream speed \n";
-print "Input values are separated by commas\n";
+print "Input values are separated by commas.\n";
+print "NOTE: These values are not used in this version of RBM.    \n";
+print "They are included for the purposes of accommodating legacy code.\n";
 print "    \n";
 print "Input parameter, <smooth>, for smoothing daily air temperatures \n";
 chomp($smooth=<STDIN>);
