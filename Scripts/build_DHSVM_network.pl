@@ -8,10 +8,14 @@
 
 use Date::Calc qw(:all);
 #
+print "NOTE: This is an updated version of build_DHSVM_network\n";
+print "      that builds the network file for the version of RBM\n";
+print "      the incorporates variable Mohseni and Leopold parameters.\n";
+print "\n";
 print "Input ProjectName for topology file: <ProjectName>.dir\n";
 print "This script will build a network file: <ProjectName>.net\n";
 chomp($project=<STDIN>);
-#$dhsvm=~s/^\s+//;
+#
 $dhsvm=$project.'.dir';
 open DHSVM, "$dhsvm" or die "Cannot open $dhsvm\n"; 
 $dhsvm_net=$project.'.net';
@@ -20,39 +24,10 @@ $forcing_file=$project.'.forcing';
 #
 # Prepare the header for the nework file:<ProjectName>.net";
 #
-print "Input parameters for initial (headwaters) temperatures \n";
-print "and hydraulic parameters, depth and stream speed \n";
-print "Input values are separated by commas.\n";
-print "NOTE: These values are not used in this version of RBM.    \n";
-print "They are included for the purposes of accommodating legacy code.\n";
-print "    \n";
-print "Input parameter, <smooth>, for smoothing daily air temperatures \n";
-chomp($smooth=<STDIN>);
-#
-print "Input Mohseni nonlinear regregression parameters \n"; 
-print "<alpha>,<beta>,<gamma>,<mu>\n";
-chomp($zz=<STDIN>);
-($alpha,$beta,$gamma,$mu)=split/,/,$zz;
-#
-print "Leopold coefficients,<U_a>, <U_B> + u_min for stream speed, u \n";
-print "where u = <U_a>*Q**<U_b> and u_min is a threshold speed (English units \n";
-chomp($zz=<STDIN>);
-($U_a,$U_b,$u_min)=split/,/,$zz;
-#
-print "Leopold coefficients,<D_a>, <D_b> + d_min for stream depth, D \n";
-print "where D = <D_a>*Q**<D_b> and D_min is a threshold depth (English units) \n";
-chomp($zz=<STDIN>);
-($D_a,$D_b,$D_min)=split/,/,$zz;
-#
 print NET "Temperature simulation for the project: $project\n";
 # 
 print NET "$forcing_file\n";
 #
-printf NET "%5.1f %4.1f %4.2f %4.1f %4.2f Mohseni parameters\n",
-           $alpha,$beta,$gamma,$mu,$smooth;
-printf NET "%5.2f %4.2f %4.1f           Leopold coefficients for depth\n",
-            $D_a,$D_b,$D_min;
-printf NET "%5.2f %4.2f %4.1f           Leopold coefficients for stream speed\n",        $U_a,$U_b,$u_min; 
 #
 $node_map=$project.'.segmap';
 open MAP, ">$node_map" or die "Cannot open MAP file\n";
