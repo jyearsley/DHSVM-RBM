@@ -60,13 +60,13 @@ integer numarg
 !
 write(*,*) TRIM(Project)//'.map'
 open(10,file=TRIM(Project)//'.segmap',status='old')
-open(20,file=TRIM(InDirectry)//'/ATP.Only',status='old')
-open(21,file=TRIM(InDirectry)//'/NLW.Only',status='old')
-open(22,file=TRIM(InDirectry)//'/NSW.Only',status='old')
-open(23,file=TRIM(InDirectry)//'/VP.Only',status='old')
-open(24,file=TRIM(InDirectry)//'/WND.Only',status='old')
-open(25,file=TRIM(InDirectry)//'/Inflow.Only',status='old')
-open(26,file=TRIM(InDirectry)//'/Outflow.Only',status='old')
+open(20,file=TRIM(InDirectry)//'ATP.Only',status='old')
+open(21,file=TRIM(InDirectry)//'NLW.Only',status='old')
+open(22,file=TRIM(InDirectry)//'NSW.Only',status='old')
+open(23,file=TRIM(InDirectry)//'VP.Only',status='old')
+open(24,file=TRIM(InDirectry)//'WND.Only',status='old')
+open(25,file=TRIM(InDirectry)//'Inflow.Only',status='old')
+open(26,file=TRIM(InDirectry)//'Outflow.Only',status='old')
 !
 open(30,file=TRIM(Project)//'.forcing',status='unknown')
 !

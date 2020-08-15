@@ -8,10 +8,16 @@
 
 use Date::Calc qw(:all);
 #
+# Default value of ndelta, the number of segments in each stream cell
+#
+$n_default = 2;
+#
 print "NOTE: This is an updated version of build_DHSVM_network\n";
 print "      that builds the network file for the version of RBM\n";
 print "      the incorporates variable Mohseni and Leopold parameters.\n";
-print "\n";
+print " The number of reach segments, ndelta is set at 2. Specific changes,\n";
+print " where necessary, must be made in the *.net file\n";
+#
 print "Input ProjectName for topology file: <ProjectName>.dir\n";
 print "This script will build a network file: <ProjectName>.net\n";
 chomp($project=<STDIN>);
@@ -224,8 +230,8 @@ for $n_stordr (1..$stream_order) {
         printf NET "#_Segments %5d Headwaters %5d TribCell   %6d %6d %6d\n"
                    ,$n_seg_hw[$nh],$nh,$trib_ndx[$ds_seg_no[$path]],$path,$path2;
       }  
-      printf NET "Seq   %5d Path %5d X_0  %10.3f X_1  %10.3f Elevation %8.2f \n",$seg_seq, $path_seg[$nh][$ns]
-                 ,$r_feet0[$ns],$r_feet1[$ns],$elev[$path_seg[$nh][$ns]];
+      printf NET "Seq   %5d Path %5d X_0  %10.3f X_1  %10.3f Elevation %8.2f %5d\n",$seg_seq, $path_seg[$nh][$ns]
+                 ,$r_feet0[$ns],$r_feet1[$ns],$elev[$path_seg[$nh][$ns]],$n_default;
       printf MAP " Sequence %5d Path %5d\n",$seg_seq, $path_seg[$nh][$ns]; 
     }
     $nsm=$n_seg_hw[$nh];
