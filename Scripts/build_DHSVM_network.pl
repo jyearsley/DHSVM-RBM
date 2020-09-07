@@ -14,12 +14,13 @@ $n_default = 2;
 #
 print "NOTE: This is an updated version of build_DHSVM_network\n";
 print "      that builds the network file for the version of RBM\n";
-print "      the incorporates variable Mohseni and Leopold parameters.\n";
-print " The number of reach segments, ndelta is set at 2. Specific changes,\n";
-print " where necessary, must be made in the *.net file\n";
-#
-print "Input ProjectName for topology file: <ProjectName>.dir\n";
-print "This script will build a network file: <ProjectName>.net\n";
+print "      that incorporates variable Mohseni and Leopold parameters.\n";
+print "\n";
+print "      The number of reach segments, ndelta is set at 2. Specific changes,\n";
+print "      where necessary, must be made in the *.net file\n";
+rint "\n";
+print "      Input ProjectName for topology file: <Project>\n";
+print "      This script will build a network file: <Project>.net and a <Project>.segmap file\n";
 chomp($project=<STDIN>);
 #
 $dhsvm=$project.'.dir';
