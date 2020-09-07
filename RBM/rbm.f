@@ -628,7 +628,7 @@ c                     if(nsmod.eq.0) then
      &                '(f11.5,i5,1x,i4,1x,2i5,1x,5f7.2,f9.2,f9.1)') 
      &                       time,ndout,ndd,ncell,ns,t0
      &                      ,T_head(nr),dbt(ncell)
-     &                      ,depth(ncell),u(ncell),qin(ncell),qsw_out
+     &                      ,depth(ncell),u(ncell),qin(ncell)
                        pp_T=.FALSE.
 
                      end if
