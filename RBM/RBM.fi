@@ -19,47 +19,44 @@ C
 C    Dimensioned integer variables
 C
       COMMON/BLOCK3/
-     &  no_celm(1000),no_cells(1000),no_tribs(1000),node(1000)
-     & ,main_stem(1000),last_seg(1000)
-     & ,ndelta(1000)
+     &  no_celm(1000),no_cells(2000),no_tribs(2000)
+     & ,ndelta(2000),nx_part(1000)
 c
-c    Added last_seg(5000) to COMMON/BLOCK3/ to handle tributary
+c    Added last_seg(2000) to COMMON/BLOCK3/ to handle tributary
 c    input temperature  11/14/2008
 c
 C
-      COMMON/BLOCK4/qin(1000),q_trib(1000),qout(1000)
-     &             ,qdiff(1000),depth(1000),width(1000)
-     &             ,lat_flow(1000)
-     &             ,D_a(1000),D_b(1000),D_min(1000)
-     &             ,U_a(1000),U_b(1000),U_min(1000)
+      COMMON/BLOCK4/qin(1600),q_trib(1600),qout(1600)
+     &             ,qdiff(1600),depth(1600)
+     &             ,D_a(1600),D_b(1600),D_min(1600)
+     &             ,U_a(1600),U_b(1600),U_min(1600)
 C
-C
-      COMMON/BLOCK5/ temp(500,-2:1000,2),T_trib(1000)
+C         
+      COMMON/BLOCK5/ temp(810,-2:240,2),T_trib(1600)
 c
 
 C     BLOCKI.COM - CONTAINS ARRAYS WITH DEPTH AND VELOCITY
 C                  CHARACTERISTICS AND RIVER MILE INDICES
 C                  FOR RNGKMOD.
 C
-      COMMON/BLOCK6/dx(1000),dt(1000)
-     &  ,x_dist(500,0:1000),u(1000),elev(1000)
+      COMMON/BLOCK6/dx(1600),dt(1600),dt_sum(1000)
+     &  ,x_dist(850,0:250),xpprt(1000),u(1600),elev(1600)
 C
 C
 C     BLOCKK.COM - Contains arrays with meteorological data
 C
       COMMON/BLOCK8/
-     & QNS(1000),QNA(1000),DBT(1000),WIND(1000)
-     & ,EA(1000),PRESS(1000),PF,PHPER
-     & ,alf_Mu(1000),beta(1000),gmma(1000),mu(1000)
+     & QNS(1600),QNA(1600),DBT(1600),WIND(1600)
+     & ,EA(1600),PRESS(1600),PF,PHPER
+     & ,alf_Mu(1000),beta(1000),gmma(1000),gmu(1000)
 c
 c     Declare variables
 c
-      COMMON/BLOCK9/segment_cell(500,1000),trib(500,1000)
-     &             ,head_cell(1000)
+      COMMON/BLOCK9/segment_cell(900,0:240),trib(1600,25)
 c
 c    Print variable
 c
-      COMMON/BLOCKA/ print_T(500,1000)
+c     COMMON/BLOCKA/ print_T(1000,1000)
 c
 c
       integer flow_cells,heat_cells,lat_flow

@@ -26,8 +26,7 @@ C     University of Washington
 C     Seattle, Washington
 C     98195-2700
 C     yearsley@hydro.washington.edu
-C
-      character*8  start_data,end_data     
+C     
       character*200 Prefix1, Prefix2
       integer iargc
       integer numarg
@@ -95,7 +94,7 @@ C
       character*11 end_time,start_time
       character*5 Dummy_B
       character*10 Dummy_A
-      integer head_name,trib_cell,first_cell
+      integer trib_cell,first_cell
       dimension ndmo(12)
       logical Test
       INCLUDE 'RBM.fi'
@@ -106,6 +105,20 @@ c     periods per day of weather data from the forcing file
 c 
 c 
       ndcll=0
+c    
+      qin=0
+      q_trib=0
+      qout=0
+      qdiff=0
+      depth=0
+      x_dist=0
+      D_a = 0
+      D_b = 0
+      D_in= 0
+      U_a = 0
+      u_b = 0
+      U_min = 0   
+c
       read(30,*) start_time,end_time,nwpd,nd_start
       write(*,*) start_time,'  ',end_time,nwpd,nd_start
 C
@@ -134,7 +147,7 @@ c
       read(40,*) Test,a_smooth
       b_smooth=1.- a_smooth
       do nr=1,no_rch
-        read(40,*) nnr,alf_Mu(nr),beta(nr),gmma(nr),mu(nr)
+        read(40,*) nnr,alf_Mu(nr),beta(nr),gmma(nr),gmu(nr)
 c
 c Modify alf_Mu for test
 c 
@@ -157,7 +170,6 @@ C
 c
 c     Initialize NSEG, the total number of segments in this reach
       nseg=0
-      write(*,*) ' Starting to read reach ',nreach
 c
 c     Read the number of cells in this reach, the headwater #,
 c     the number of the cell where it enters the next higher order stream,
@@ -166,7 +178,7 @@ c     the river mile of the headwaters.
 c
 c
       read(90,*) Dummy_A,no_cells(nreach),
-     &              Dummy_A,main_stem(nreach),Dummy_A,trib_cell                
+     &              Dummy_A,main_stem,Dummy_A,trib_cell                
 c
 c     If this is reach that is tributary to cell TRIB_CELL, give it the
 c     pointer TRIB(TRIB_CELL) the index of this reach for further use.
@@ -181,11 +193,11 @@ c     Reading Reach Element information
 c
 c
       first_cell=1
+      nseg = 0
 c 
       do nc=1,no_cells(nreach)
         ncell=ncell+1
         read(50,*) ncll,U_a(ncell),U_b(ncell),U_min(ncell)
-        write(*,*) ncll,ncell,U_a(ncell),U_b(ncell),U_min(ncell)
         if (ncll .ne.ncell) then
           write(*,*) 'Mismatch in Leopold file'
         end if  
@@ -200,16 +212,16 @@ c
 C     Card Type 3. Cell indexing #, Node # Row # Column Lat Long RM
 C
 
-        read(90,*) Dummy_B,nnc,Dummy_B,node(nnc)
+        read(90,*) Dummy_B,nnc,Dummy_B,node
      &           ,Dummy_B,x_0,Dummy_B,x_1
      &           ,Dummy_B,elev(nreach),ndelta(ncell)
         ndcll=ndcll+ndelta(ncell)
-        if (first_cell.eq.1) then
+        if (nseg .eq. 0) then
           first_cell=0
-          head_cell(nreach)=ncell
           x_dist(nreach,0)=x_1
         end if
-        dx(ncell)=(x_1-x_0)/ndelta(ncell)
+        xndlta = ndelta(ncell)
+        dx(ncell)=(x_1-x_0)/xndlta
         nndlta=0
   200 continue
 c 
@@ -226,7 +238,7 @@ c
 c
 c  Set the print
 c   
-C
+C 
       end do
 c
 c     Define last segment for purposes of specifying tributary
@@ -248,25 +260,32 @@ c
   900 END
       SUBROUTINE SYSTMM
       real*4 xa(4),ta(4),T_head(1000),T_smth(1000)
-     *      ,dt_part(1000),x_part(1000)
-      real*8 day_fract,hr_fract,sim_incr,year,prnt_time
+     *      ,dt_part(500,250),x_part(1000)
+      real*4 t1(250),t2(250),x1(250),x2(250)
+      real*8 day_fract,hr_fract,sim_incr,year
       integer no_dt(1000),nstrt_elm(1000)
      .     ,ndltp(4),nterp(4),nptest(4),ndmo(12,2)
 c 
-      logical DONE,pp_T
+      logical DONE,DONE_PART,pp_T
 
       INCLUDE 'RBM.fi'
-      data ndltp/-2,-1,-2,-2/,nterp/4,3,2,3/
+      data ndltp/-2,-1,-1,-2/,nterp/4,3,2,3/
       data lat/47.6/,pi/3.14159/,rfac/304.8/
       data ndmo/0,31,59,90,120,151,181,212,243,273,304,334
      &         ,0,31,60,91,121,152,182,213,244,274,305,335/
 c
 c
       hour_inc=1./nwpd
-      do nr=1,500
-         T_head(nr)=mu(nr)
-         T_smth(nr)=mu(nr)
+      write(*,*) 'Enter a value for the initial water temperature'
+      read(*,*) T_init
+      do nr=1,nreach
+         T_head(nr)=T_init
+         T_smth(nr)=T_init
       end do
+c
+c
+      temp = T_init
+c
       n1=1
       n2=2
       nobs=0
@@ -299,7 +318,7 @@ c
 c
 c     Year loop starts
       write(*,*) start_year,start_day,start_hour,time,day_fract,hr_fract
-      end_year=2006
+c 
       do nyear=start_year,end_year
          write(*,*) ' Simulation Year - ',nyear
          nd_year=365
@@ -322,7 +341,7 @@ c        Day loop starts
            nd2=nd_year
          end if
 c
-c
+
          DO ND=nd1,nd2
 c
 c     Start the numbers of days-to-date counter
@@ -351,26 +370,27 @@ c
      &                      ,press(l_seg),dbt(l_seg)
      &                      ,qna(l_seg),qns(l_seg),ea(l_seg),wind(l_seg)
      &                      ,qin(l_seg),qout(l_seg)
-                 if (qin(l_seg) < 0.5) then
-                     qin(l_seg)=qout(l_seg)
+
+                 if (qin(l_seg) < 5.0) then
+                     qin(l_seg)=5.0
+                     qout(l_seg) = qin(l_seg)
                  end if
                  qavg=0.5*(qin(l_seg)+qout(l_seg))
 c
 c    Stream speed estimated with Leopold coefficients
 c 
                  u(l_seg)=U_a(l_seg)*(qavg**U_b(l_seg)) 
-                 u(l_seg) = amax1(u_min(l_seg),u(l_seg))
+c                 u(l_seg) = amax1(u_min(l_seg),u(l_seg))
+                 u(l_seg) = amax1(1.0,u(l_seg))
 c 
                  qdiff(l_seg)=(qout(l_seg)-qin(l_seg))/delta_n
 c 
-                 dt(l_seg)=dx(l_seg)/u(l_seg)
+                 dt(l_seg)=dx(l_seg)/(u(l_seg))
 c
 c    Depth estimated with Leopold coefficients
 c 
                  depth(l_seg)=D_a(l_seg)*(qavg**D_b(l_seg))
                  depth(l_seg)=amax1(D_min(l_seg),depth(l_seg))
-c
-                 lat_flow(l_seg)=qout(l_seg)-qin(l_seg)
                end do
 c
 c  Set the value of the tributary flow due to the reach, NR
@@ -389,83 +409,110 @@ c
 c     Begin cycling through the reaches 
 c
                do nr=1,nreach
-                  nc_head=segment_cell(nr,1)
-                  T_smth(nr)=b_smooth*T_smth(nr)+a_smooth*dbt(nc_head)
-                  T_head(nr)=mu(nr)
-     &            +(alf_Mu(nr)/(1.+exp(gmma(nr)*(beta(nr)-T_smth(nr))))) 
-                  temp(nr,0,n1)=T_head(nr)
-                  temp(nr,-1,n1)=T_head(nr)
-                  temp(nr,-2,n1)=T_head(nr)
-                  temp(nr,no_celm(nr)+1,n1)=temp(nr,no_celm(nr),n1)
-                  x_head=x_dist(nr,0)
-                  x_bndry=x_head-1.0
-
+c
+                 nc_head=segment_cell(nr,1)
+                 T_smth(nr)=b_smooth*T_smth(nr)+a_smooth*dbt(nc_head)
+                 T_smth(nr) = dbt(nc_head)     
+                 T_head(nr)=gmu(nr)
+     &           +(alf_Mu(nr)/(1.+exp(gmma(nr)*(beta(nr)-T_smth(nr))))) 
+                 temp(nr,0,n1)=T_head(nr)
+                 temp(nr,-1,n1)=T_head(nr)
+                 temp(nr,-2,n1)=T_head(nr)
+c                  temp(nr,no_celm(nr)+1,n1)=temp(nr,no_celm(nr),n1)
+                 x_head=x_dist(nr,0)
+                 x_bndry=x_head-1.0
+                  
 c     First do the reverse particle tracking
 c
-
                   do ns=no_celm(nr),1,-1
 c
 c     Segment is in cell SEGMENT_CELL(NC)
 c
 
-                     ncell=segment_cell(nr,ns)
-                     nx_s=1
-                     nx_part=ns
-                     dt_part(ns)=dt(ncell)
-                     dt_total=dt_part(ns)
-                     x_part(ns)=x_dist(nr,ns)
- 100                 continue
+                    ncell=segment_cell(nr,ns)
+                   nx_s=0
+                    nx_test = 0
+                    nx_part(ns) = ns
+                    dt_total = 0.0
+                    dt_part(ns,1)=dt(ncell) 
+                    x_part(ns)=x_dist(nr,ns)
+                    xpprt =ns
+                    xx_part = ns
+                    DONE_PART = .FALSE.
 c
+                    if (dt(ncell) .gt. dt_comp) then
+                      nstrt_elm(ns) = ns
+                      x_part(ns) = x_dist(nr,0) + u(ncell)*dt_comp
+                      nx_s = nx_s + 1
+                      jtrp1 = ns
+                      jtrp2 = ns-1
+                      x1(ns) = x_dist(nr,jtrp1)
+                      x2(ns) = x_dist(nr,jtrp2)
+                      t1(ns) = temp(nr,jtrp1,n1)
+                      t2(ns) = temp(nr,jtrp2,n1)
+                     no_dt(ns) = 1
+                      dt_part(ns,nx_s) = dt_comp
+                      DONE_PART = .TRUE.
+                    end if 
+c
+c                     
+ 100                continue
+       
 c     Determine if the total elapsed travel time is equal to the
 c     computational interval
 c
-
-                     if(dt_total.lt.dt_comp) then
-                        x_part(ns)=x_part(ns)
-     .				         +dx(segment_cell(nr,nx_part))
-c     If the particle has started upstream from the boundary point, give it
-c     the value of the boundary
-c
-
-                        if(x_part(ns).ge.x_bndry) then
-                           x_part(ns)=x_head
-                           dt_part(ns)=dt(segment_cell(nr,nx_part))
-                           dt_total=dt_total+dt_part(ns)
-c                           nx_part=head_cell(nr)
-                           go to 200
+                    if (.not. DONE_PART) then
+                      dt_dummy = 0.0
+                      x_dummy = x_dist(nr,ns)
+                      do nss = ns,1,-1
+                        nssdmm = nss
+                        ncell = segment_cell(nr,nss)
+                        dt_dummy = dt_dummy + dt(ncell)
+                        dt_sum(nss) = dt_dummy
+                        dt_total = dt(ncell) + dt_total
+                        nx_s = nx_s +  1
+                        dt_part(ns,nx_s) = dt(ncell) 
+                        nstrt_elm(ns) = nss
+                        x_dummy = x_dummy + u(ncell)
+     .                          *dt(ncell)
+                        xpprt(nssdmm) = x_dummy
+                        if (dt_total .gt. dt_comp)  then
+                          exit
                         end if
+
+                       end do
 c
-c     Increment the segment counter if the total time is less than the
-c     computational interval
+                       if (nstrt_elm(ns) .eq.1 .and.
+     .                     dt_total.lt.dt_comp) then          
+                         x_part(ns) = x_dist(nr,0) 
+                          DONE_PART = .TRUE.
+                       end if                 
+c  
+                       dt_left = dt_comp - dt_sum(nssdmm+1) 
+                       if (.not. DONE_PART .and. dt_left .gt. 0.0) then
+                         dt_part(ns,nx_s) = dt_left                 
+                         x_part(ns) = xpprt(nssdmm+1)+u(ncell)*dt_left
+                       end if
+                      if (x_part(ns) .gt. x_bndry) then
+                         x_part(ns)=x_bndry+0.5    
+                      end if
+c 
+                      jtrp1 = nssdmm
+                      jtrp2 = nssdmm-1
+                      x1(ns) = x_dist(nr,jtrp1)
+                      x2(ns) = x_dist(nr,jtrp2)
+                      t1(ns) = temp(nr,jtrp1,n1)
+                      t2(ns) = temp(nr,jtrp2,n1)
 c
-                        nx_s=nx_s+1
-                        nx_part=nx_part-1
-                        dt_part(ns)=dt(segment_cell(nr,nx_part))
-                        dt_total=dt_total+dt_part(ns)
-                        go to 100
-                     else
+c                      
+                    end if
+                      DONE_PART = .TRUE.
 c
 c     For the last segment of particle travel, adjust the particle location
 c     such that the total particle travel time is equal to the computational
 c     interval.
-c
-
-                        dt_before=dt_part(ns)
-                        dt_part(ns)
-     .                       =dt_comp-dt_total+dt_part(ns)
-                        x_part(ns)=x_part(ns)
-     .                            +u(segment_cell(nr,nx_part))
-     .                            *dt_part(ns)
-                        if(x_part(ns).ge.x_head) then
-                           x_part(ns)=x_head
-                           nx_s=nx_s-1
-                           dt_part(ns)=dt(head_cell(nr))
-                        end if
-                     end if
- 200                 continue
-                     if(nx_part.lt.1) nx_part=1
-                     nstrt_elm(ns)=nx_part
-                     no_dt(ns)=nx_s
+c   
+                    no_dt(ns)=nx_s
                   end do
                   DONE=.FALSE.
                   pp_T=.FALSE.
@@ -478,7 +525,7 @@ c
                        nprint=0
                      end if
                      itest=no_celm(nr)
-c
+ 
 c     Net solar radiation (kcal/meter^2/second)
 c
 c     qns
@@ -516,63 +563,60 @@ c     establish the starting temperature values
 c     for each parcel
 c
                      nseg=nstrt_elm(ns)
-                     npndx=1
+                     npndx=3 
 c
 c     If starting element is the first one, then set
 c     the initial temperature to the boundary value
 c
-                     if (nseg.eq.1) then
+                     if (x_part(ns). gt.x_bndry) then
                         t0=T_head(nr)
-                        go to 350
+                        go to 400
                      end if
-c
-c     Perform polynomial interpolation
-c
-                     do ntrp=1,nterp(npndx)
-                        npart=nseg+ntrp+ndltp(npndx)-1
-                        nptest(ntrp)=npart
-                        xa(ntrp)=x_dist(nr,npart)
-                        ta(ntrp)=temp(nr,npart,n1)
-                     end do
                      x=x_part(ns)
-  280                continue
+                     dlta2 = x_part(ns)-x1(ns)
+                     dlta1 = x2(ns)-x_part(ns)
+                     dlta = x2(ns) - x1(ns)
+                     t0 = (dlta1*t1(ns) + dlta2*t2(ns))/dlta 
+c
+             continue
 c
 c     Call the interpolation function
-c
+c 
 
-                     t0=tntrp(xa,ta,x,nterp(npndx))
-                     ttrp=t0
+c                     t0=tntrp(xa,ta,x,nterp(npndx))
+                          ttrp=t0
  300                 continue
- 350                 continue
-                     dt_calc=dt_part(ns)
-                     nncell=segment_cell(nr,nstrt_elm(ns))
-c
 c    Set NCELL0 for purposes of tributary input
 c
+ 400                 continue
+c
+                     nncell=segment_cell(nr,nseg)
+ 
+                     dt_calc=dt_part(ns,nx_s)
                      ncell0=nncell
                      dt_total=dt_calc
-                     do nm=no_dt(ns),1,-1
+                     do nm=no_dt(ns),1,-1               
                        u_river=u(nncell)/3.2808
                        z=depth(nncell)
                        call energy
-     &                      (t0,QSURF,A,B,ncell)
+     &                      (t0,QSURF,A,B,nncell)
                        t_eq=-B/A
                        qdot=qsurf/(z*rfac)
-                       t0=t0+qdot*dt_calc  
-
-                       if(t0.lt.0.0) t0=0.0
- 400                   continue
-c
+                       T00 = t0
+                       t0=t0+qdot*dt_part(ns,nm)
+c                       if(t0.lt.0.0) t0=0.0
+c  
 c     Look for a tributary.
 c 
                        q1=qin(nncell)
 
-                       ntribs=no_tribs(nncell)
+                          ntribs=no_tribs(nncell)
                        if (ntribs.gt.0.and..not.DONE) then
                          do ntrb=1,ntribs
                            nr_trib=trib(nncell,ntrb)
                            q2=q1+q_trib(nr_trib)
-                           t0=(q1*t0+q_trib(nr_trib)*T_trib(nr_trib))/q2
+                           t0=(q1*t0+q_trib(nr_trib)*T_trib(nr_trib))
+     .                       /(q2+0.1)
                            q1=q1+q_trib(nr_trib)
 c
   450 continue
@@ -580,14 +624,15 @@ c
                          DONE=.TRUE.
                        end if
                        t00=t0
-                       if (lat_flow(nncell).gt.0) then
+                       dst_flow = qout(nncell)-qin(nncell)
+                       if (dst_flow.gt.0) then
                           q1=qin(nncell)
-                          q2=q1+lat_flow(nncell)
+                          q2=q1+dst_flow
 c
 c  Modified nonpoint source temperature so as to be the same
 c  as the instream simulated temperature for Connecticut River 7/2015
                           T_dist=t0
-                          t0=(q1*t0+lat_flow(nncell)*T_dist)/q2
+                            t0=(q1*t0+dst_flow*T_dist)/(q2+0.01)
                           dtlat=t0-t00
                         end if
  500                    continue
@@ -600,9 +645,10 @@ c
                            ncell0=nncell
                            DONE=.FALSE.
                         end if
+
                         dt_calc=dt(nncell)
                         dt_total=dt_total+dt_calc
-                      end do
+                      end do  
                       if (t0.lt.0.5) t0=0.5
                      temp(nr,ns,n2)=t0
 	             T_trib(nr)=t0
@@ -620,13 +666,13 @@ c
                          nyear_out=nyear+1
                        end if
                      end if
-                     if (pp_T) then
+                    if (pp_T) then
 c                     if(nsmod.eq.0) then
                        qsw_out=4186.8*qns(ncell)
                        rmile_plot=x_dist(nr,ns)/5280.
                        write(20,
-     &                '(f11.5,i5,1x,i4,1x,2i5,1x,5f7.2,f9.2,f9.1)') 
-     &                       time,ndout,ndd,ncell,ns,t0
+     &                '(f11.5,i5,1x,i4,1x,3i5,1x,5f7.2,f9.2,f9.1)') 
+     &                       time,ndout,ndd,nr,ncell,ns,t0
      &                      ,T_head(nr),dbt(ncell)
      &                      ,depth(ncell),u(ncell),qin(ncell)
                        pp_T=.FALSE.
@@ -638,13 +684,13 @@ c
 
                   end do
 c     End of reach loop
-c
+c      
+
 
                end do
                ntmp=n1
                n1=n2
                n2=ntmp
-c
 c     End of weather period loop (NDD=1,NWPD)
 c
             end do
@@ -681,7 +727,7 @@ c
       end
       SUBROUTINE ENERGY
      &           (TSURF,QSURF,A,B,ncell)
-      REAL*4 Ksw,LVP
+      REAL*4 LVP
       real*4 q_fit(2),T_fit(2),evrate
       INCLUDE 'RBM.fi'
       data evrate/1.5e-9/,pf/0.640/
