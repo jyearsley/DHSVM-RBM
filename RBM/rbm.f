@@ -50,6 +50,9 @@ c
 c
 c     Identify and open necessary files
 c
+c     open the snow melt file
+      open(unit=15,file='smelt.dat',status='old')
+c
 c     open the output file 
       open(unit=20,file=TRIM(Prefix2)//'.temp',status='unknown')
 c
@@ -259,6 +262,8 @@ c
       RETURN
   900 END
       SUBROUTINE SYSTMM
+c
+      real swe_min,smelt,T_melt
       real*4 xa(4),ta(4),T_head(1000),T_smth(1000)
      *      ,dt_part(500,250),x_part(1000)
       real*4 t1(250),t2(250),x1(250),x2(250)
@@ -289,6 +294,10 @@ c
       n1=1
       n2=2
       nobs=0
+c
+c Input parameters for determining when there aresnow melt effects
+c
+      write(*,*) 'Snowmelt parameters,T_melt and swe_min ',T_melt,swe_min
 c
 c     Initialize the day counter used for calculating the
 c     record position for direct access files
@@ -398,6 +407,10 @@ c
                q_trib(nr)=qout(l_seg)
 	     end do
 c
+c Read the snowmelt file
+c
+             read(15,*) smelt
+c
 c     Main stem inflows and outflows for each reach first
 c     Flows are cumulative and do not include tributaries if
 c     tributaries are downstream of the inflow junction
@@ -421,7 +434,17 @@ c
 c                  temp(nr,no_celm(nr)+1,n1)=temp(nr,no_celm(nr),n1)
                  x_head=x_dist(nr,0)
                  x_bndry=x_head-1.0
-                  
+c
+c Snowmelt influence
+c
+                 Tmohseni = T_head(nr)
+c
+                 if(smelt .gt. swe_min) then
+                   T_head(nr) = T_melt
+                 else
+                   T_head(nr) = Tmohseni
+                 end if
+c                  
 c     First do the reverse particle tracking
 c
                   do ns=no_celm(nr),1,-1
