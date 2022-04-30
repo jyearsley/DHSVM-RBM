@@ -3,7 +3,7 @@ implicit none
 !
 ! Integer variables
 !
-integer::delta_t,ierror,iostat,n,nc,nd_start,no_cycles
+integer::delta_t,ierror,iostat,n,nc,nd_start,no_steps
 integer::narray,nf,nfile,n_head,nn,no_years,no_seg,nvg
 integer::no_avg,no_dt,no_days,nobs_start,nobs_end
 integer::start_day,start_mon,start_yr,end_day,end_mon,end_yr,start_hour,end_hour
@@ -12,7 +12,9 @@ integer,allocatable,dimension(:):: seg_no,seg_indx,seg_seq,seg_net
 integer,allocatable,dimension(:):: dummy
 !
 ! Real variables
+real                            :: dt_steps
 real,parameter                  :: press=1013.
+real,parameter,dimension(5) :: c_fctr = (/1.0,2.3884e-04,2.3884e-04,0.01,1.0/)
 real,allocatable,dimension(:)   :: depth,out_flow,in_flow,lat_flow
 real,allocatable,dimension(:,:) :: DHSVM_out,forcing
 !
@@ -110,16 +112,23 @@ do nf=1,7
   nfile=nfile+1
 end do
 !
+! Temporary change to end date for testing daily average - JRY
 !
-delta_t=no_dt
-no_avg = no_dt
+end_mon = 10
+end_day = 4
+end_yr  = 1995
+!
+! End of change - JRY
+!
+no_avg = 24/no_dt
+dt_steps = no_avg
 !
 ! Determine number of time steps per day
-write(*,*) 'delta_t,no_avg ',no_dt,no_avg
-no_dt=24/delta_t
+write(*,*) 'no_dt,no_avg ',no_dt,no_avg,dt_steps
 !
 nobs_start=no_dt
 nobs_end=no_dt
+delta_t = no_dt
 !
 if (no_dt .gt. 1) then
   nobs_start = (24 - start_hour)/delta_t
@@ -150,10 +159,8 @@ no_days=end_jul - start_jul
 !
 write(*,*) 'Julian',start_jul,end_jul
 !
-no_cycles=(nobs_start+nobs_end+no_dt*(no_days-1))/no_avg
-
 !
-write(*,*) 'no_cycles ',no_cycles
+write(*,*) 'no_cycles ',no_days
 write(30,'(2(i4.4,i2.2,i2.2,a1,i2.2,1x),2i4)')          &
      start_yr,start_mon,start_day,colon,start_hour          &
     ,end_yr,end_mon,end_day,colon,end_hour                  &
@@ -180,22 +187,7 @@ do nf=2,7
 end do!
 ! Read the forcings from the DHSVM file
 !
-do nc=1,no_cycles
-  forcing = 0.0
-  do nvg = 1,no_avg
-    nfile=19
-    do nf=1,5
-      nfile=nfile+1
-      read(nfile,*) time_stamp,(DHSVM_out(nf,n),n=1,no_seg)
-    end do
-    do n=1,no_seg
-      forcing(1,n)=0.01*forcing(4,n)+DHSVM_out(1,n)/delta_t
-      forcing(2,n)=2.3884e-04*forcing(2,n)+DHSVM_out(2,n)/delta_t
-      forcing(3,n)=2.3884e-04*forcing(3,n)+DHSVM_out(3,n)/delta_t
-      forcing(4,n)=0.01*forcing(4,n)+DHSVM_out(4,n)/delta_t
-      forcing(5,n)=0.01*forcing(4,n)+DHSVM_out(5,n)/delta_t
-    end do
-  end do
+do nc=1,no_days
 !
 ! Read the streamflow from the DHSVM file
 !
@@ -213,13 +205,26 @@ do nc=1,no_cycles
       in_flow(n) = 0.01
     end if
   end do
+  forcing = 0.0
+  do nvg = 1,no_avg
+    nfile=19
+    do nf=1,5
+      nfile=nfile+1
+      read(nfile,*) time_stamp,(DHSVM_out(nf,n),n=1,no_seg)
+      if (nf .eq. 1) write(35,*) time_stamp
+      do n=1,no_seg
+        forcing(nf,n)=forcing(nf,n)+c_fctr(nf)*DHSVM_out(nf,n)/dt_steps
+!      if (nf .eq. 1) &
+!      write(35,*) time_stamp,forcing(nf,n),DHSVM_out(nf,n)
+      end do
+    end do
+  end do
 !
 ! Write the output file
 !
   do n=1,no_seg
-    nn=seg_net(nf)
-    !write(*,*) n,nf,nn
-    write(30,*) n,press,(forcing(nf,nn),nf=1,5)                  &
+    nn=seg_no(n)
+    write(30,*) n,nn,press,(forcing(nf,nn),nf=1,5)                  &
                ,in_flow(nn),out_flow(nn)
   end do
 end do
