@@ -18,12 +18,13 @@ print "      that incorporates variable Mohseni and Leopold parameters.\n";
 print "\n";
 print "      The number of reach segments, ndelta is set at 2. Specific changes,\n";
 print "      where necessary, must be made in the *.net file\n";
-rint "\n";
+print "\n";
 print "      Input ProjectName for topology file: <Project>\n";
 print "      This script will build a network file: <Project>.net and a <Project>.segmap file\n";
 chomp($project=<STDIN>);
 #
 $dhsvm=$project.'.dir';
+print "$dhsvm\n";
 open DHSVM, "$dhsvm" or die "Cannot open $dhsvm\n"; 
 $dhsvm_net=$project.'.net';
 open NET, ">$dhsvm_net" or die "Cannot open NET file\n";
