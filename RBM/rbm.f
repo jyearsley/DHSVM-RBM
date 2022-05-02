@@ -435,6 +435,7 @@ c
 c                  temp(nr,no_celm(nr)+1,n1)=temp(nr,no_celm(nr),n1)
                  x_head=x_dist(nr,0)
                  x_bndry=x_head-1.0
+<<<<<<< HEAD
 c
 c Snowmelt influence
 c
@@ -448,6 +449,10 @@ c
                    end if
                  end if
 c                  
+=======
+                 if (nd .ge. 180 .and. nd .le. 250) T_head(nr) = 10.0 
+                  
+>>>>>>> origin
 c     First do the reverse particle tracking
 c
                   do ns=no_celm(nr),1,-1

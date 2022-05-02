@@ -24,6 +24,7 @@ print "      This script will build a network file: <Project>.net and a <Project
 chomp($project=<STDIN>);
 #
 $dhsvm=$project.'.dir';
+print "$dhsvm\n";
 open DHSVM, "$dhsvm" or die "Cannot open $dhsvm\n"; 
 $dhsvm_net=$project.'.net';
 open NET, ">$dhsvm_net" or die "Cannot open NET file\n";
