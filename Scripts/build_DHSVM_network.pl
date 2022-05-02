@@ -18,7 +18,7 @@ print "      that incorporates variable Mohseni and Leopold parameters.\n";
 print "\n";
 print "      The number of reach segments, ndelta is set at 2. Specific changes,\n";
 print "      where necessary, must be made in the *.net file\n";
-rint "\n";
+print "\n";
 print "      Input ProjectName for topology file: <Project>\n";
 print "      This script will build a network file: <Project>.net and a <Project>.segmap file\n";
 chomp($project=<STDIN>);
@@ -228,8 +228,8 @@ for $n_stordr (1..$stream_order) {
       if ($ns ==1) {
         $path=$path_seg[$nh][$nn_seg];
         $path2=$ds_seg_no[$path];
-        printf NET "#_Segments %5d Headwaters %5d TribCell   %6d %6d %6d\n"
-                   ,$n_seg_hw[$nh],$nh,$trib_ndx[$ds_seg_no[$path]],$path,$path2;
+        printf NET "#_Segments %5d Headwaters %5d TribCell   %6d %6d %6d %s\n"
+                   ,$n_seg_hw[$nh],$nh,$trib_ndx[$ds_seg_no[$path]],$path,$path2, 'T';
       }  
       printf NET "Seq   %5d Path %5d X_0  %10.3f X_1  %10.3f Elevation %8.2f %5d\n",$seg_seq, $path_seg[$nh][$ns]
                  ,$r_feet0[$ns],$r_feet1[$ns],$elev[$path_seg[$nh][$ns]],$n_default;

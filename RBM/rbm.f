@@ -181,7 +181,8 @@ c     the river mile of the headwaters.
 c
 c
       read(90,*) Dummy_A,no_cells(nreach),
-     &              Dummy_A,main_stem,Dummy_A,trib_cell                
+     &              Dummy_A,main_stem,Dummy_A,trib_cell,ndmm1,ndmm2
+     &             ,head_SWE(nreach)                
 c
 c     If this is reach that is tributary to cell TRIB_CELL, give it the
 c     pointer TRIB(TRIB_CELL) the index of this reach for further use.
@@ -439,10 +440,12 @@ c Snowmelt influence
 c
                  Tmohseni = T_head(nr)
 c
-                 if(smelt .gt. swe_min) then
-                   T_head(nr) = T_melt
-                 else
-                   T_head(nr) = Tmohseni
+                 if (head_SWE(nr)) then
+                   if(smelt .gt. swe_min) then
+                     T_head(nr) = T_melt
+                   else
+                     T_head(nr) = Tmohseni
+                   end if
                  end if
 c                  
 c     First do the reverse particle tracking

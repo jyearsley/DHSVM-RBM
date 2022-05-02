@@ -53,16 +53,19 @@ c
 c     Declare variables
 c
       COMMON/BLOCK9/segment_cell(900,0:240),trib(1600,25)
+     &             ,head_SWE(2000)
 c
 c    Print variable
 c
-c     COMMON/BLOCKA/ print_T(1000,1000)
+c     COMMON/BLOCKA/ head_SWE(2000)
 c
 c
       integer flow_cells,heat_cells,lat_flow
      &         ,segment_cell,trib,head_cell
      &         ,start_year,start_month,start_day,start_hour
      &         ,end_year,end_month,end_day,end_hour
+c
+      logical head_SWE
 c
 c
 
