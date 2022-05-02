@@ -112,14 +112,6 @@ do nf=1,7
   nfile=nfile+1
 end do
 !
-! Temporary change to end date for testing daily average - JRY
-!
-end_mon = 10
-end_day = 4
-end_yr  = 1995
-!
-! End of change - JRY
-!
 no_avg = 24/no_dt
 dt_steps = no_avg
 !
@@ -182,8 +174,6 @@ nfile=19
 do nf=2,7
   nfile=nfile+1
   read(nfile,*) (dummy(n),n=1,no_seg)
-!  read(nfile,*) time_stamp0
-!  write(*,"('Initial Time Stamp - ',a19)"), time_stamp0
 end do!
 ! Read the forcings from the DHSVM file
 !
@@ -214,8 +204,6 @@ do nc=1,no_days
       if (nf .eq. 1) write(35,*) time_stamp
       do n=1,no_seg
         forcing(nf,n)=forcing(nf,n)+c_fctr(nf)*DHSVM_out(nf,n)/dt_steps
-!      if (nf .eq. 1) &
-!      write(35,*) time_stamp,forcing(nf,n),DHSVM_out(nf,n)
       end do
     end do
   end do
@@ -223,7 +211,8 @@ do nc=1,no_days
 ! Write the output file
 !
   do n=1,no_seg
-    nn=seg_no(n)
+    nf=seg_no(n)
+    nn=seg_net(nf)
     write(30,*) n,nn,press,(forcing(nf,nn),nf=1,5)                  &
                ,in_flow(nn),out_flow(nn)
   end do
