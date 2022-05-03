@@ -182,6 +182,10 @@ c
 c
       read(90,*) Dummy_A,no_cells(nreach),
      &              Dummy_A,main_stem,Dummy_A,trib_cell,ndmm1,ndmm2
+c
+c Added logical variable switch for deactivating SWE in individual 
+c headwaters - JRY 05/02/2022
+c                         
      &             ,head_SWE(nreach)                
 c
 c     If this is reach that is tributary to cell TRIB_CELL, give it the
