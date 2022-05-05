@@ -124,7 +124,10 @@ c
 c
       read(30,*) start_time,end_time,nwpd,nd_start
       write(*,*) start_time,'  ',end_time,nwpd,nd_start
+c
+c Hardwire nwpd for daily-averaged input - JRY 5/5/2022
 C
+      nwpd = 1
 c Simulation starts with time = 0.0, but the first output is at time t + dt (3.0),
 c generally for DHSVM simulations. So update "nd_start"
 c
