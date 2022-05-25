@@ -289,8 +289,8 @@ c
 c
 c
       hour_inc=1./nwpd
-      write(*,*) 'Enter a value for the initial water temperature'
-      read(*,*) T_init
+      write(*,*) 'Initial water temperature, and melt temperature'
+      read(*,*) T_init,T_melt
       do nr=1,nreach
          T_head(nr)=T_init
          T_smth(nr)=T_init
@@ -383,7 +383,7 @@ c     Hardwire annual average temperature for headwaters
 c
                do nc=1,no_cells(nr)
                  l_seg=l_seg+1
-                 read(30,*,end=900) l1
+                 read(30,*,end=900) l1,jjdmm
      &                      ,press(l_seg),dbt(l_seg)
      &                      ,qna(l_seg),qns(l_seg),ea(l_seg),wind(l_seg)
      &                      ,qin(l_seg),qout(l_seg)
