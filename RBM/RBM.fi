@@ -32,7 +32,7 @@ C
      &             ,U_a(1600),U_b(1600),U_min(1600)
 C
 C         
-      COMMON/BLOCK5/ temp(810,-2:240,2),T_trib(1600)
+      COMMON/BLOCK5/ temp(1000,-2:240,2),T_trib(1600)
 c
 
 C     BLOCKI.COM - CONTAINS ARRAYS WITH DEPTH AND VELOCITY
@@ -40,7 +40,7 @@ C                  CHARACTERISTICS AND RIVER MILE INDICES
 C                  FOR RNGKMOD.
 C
       COMMON/BLOCK6/dx(1600),dt(1600),dt_sum(1000)
-     &  ,x_dist(850,0:250),xpprt(1000),u(1600),elev(1600)
+     &  ,x_dist(1000,0:250),xpprt(1000),u(1600),elev(1600)
 C
 C
 C     BLOCKK.COM - Contains arrays with meteorological data
@@ -49,10 +49,11 @@ C
      & QNS(1600),QNA(1600),DBT(1600),WIND(1600)
      & ,EA(1600),PRESS(1600),PF,PHPER
      & ,alf_Mu(1000),beta(1000),gmma(1000),gmu(1000)
+     & , Shft_Arry(1000,24),AR1(1000,24)
 c
 c     Declare variables
 c
-      COMMON/BLOCK9/segment_cell(900,0:240),trib(1600,25)
+      COMMON/BLOCK9/segment_cell(1000,0:240),trib(1600,25)
      &             ,head_SWE(2000)
 c
 c    Print variable

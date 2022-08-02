@@ -3,9 +3,9 @@ implicit none
 !
 ! Integer variables
 !
-integer::delta_t,ierror,iostat,n,nc,nd_start,no_steps
+integer::delta_t,hr_avg,ierror,iostat,n,nc,nd_start,no_steps
 integer::narray,nf,nfile,n_head,nn,no_years,no_seg,nvg
-integer::no_avg,no_dt,no_days,nobs_start,nobs_end
+integer::no_avg,no_dt,ndpnt,no_days,nobs,nobs_start,nobs_end
 integer::start_day,start_mon,start_yr,end_day,end_mon,end_yr,start_hour,end_hour
 integer::Julian,start_jul,end_jul
 integer,allocatable,dimension(:):: seg_no,seg_indx,seg_seq,seg_net
@@ -14,7 +14,8 @@ integer,allocatable,dimension(:):: dummy
 ! Real variables
 real                            :: dt_steps
 real,parameter                  :: press=1013.
-real,parameter,dimension(5) :: c_fctr = (/1.0,2.3884e-04,2.3884e-04,0.01,1.0/)
+real,parameter,dimension(7) :: c_fctr = (/1.0,2.3884e-04,2.3884e-04,0.01,1.0   &
+                                          ,35.315,35.315/)
 real,allocatable,dimension(:)   :: depth,out_flow,in_flow,lat_flow
 real,allocatable,dimension(:,:) :: DHSVM_out,forcing
 !
@@ -90,14 +91,12 @@ allocate (in_flow(narray))
 allocate (out_flow(narray))
 !allocate (lat_flow(narray))
 !allocate (depth(narray))
-allocate (DHSVM_out(5,narray))
-allocate (forcing(5,narray))
+allocate (DHSVM_out(7,narray))
+allocate (forcing(7,narray))
 !
 do n=1,no_seg
   read(10,*) sequence,nn,path,seg_no(n)
 end do
-
-write(*,*) 'NOTE: This version of Create_File outputs daily averages of thermal forcing'
 !
 nfile=20
 do nf=1,7
@@ -112,47 +111,34 @@ do nf=1,7
   nfile=nfile+1
 end do
 !
-no_avg = 24/no_dt
+write(*,*) 'Number of hours in averaging period,hr_avg. Note: hr_avg/no_dt must be integer'
+read(*,*) hr_avg
+no_avg = hr_avg/no_dt
 dt_steps = no_avg
 !
-! Determine number of time steps per day
-write(*,*) 'no_dt,no_avg ',no_dt,no_avg,dt_steps
+! Number of data points in a day
 !
-nobs_start=no_dt
-nobs_end=no_dt
+ndpnt = 24/no_dt
+!
+! Determine number of time steps per day
+write(*,*) 'no_dt,hr_avg,no_avg ',no_dt,hr_avg,no_avg,dt_steps
+!
 delta_t = no_dt
 !
-if (no_dt .gt. 1) then
-  nobs_start = (24 - start_hour)/delta_t
-  nobs_end   = 1+(end_hour/delta_t)
-end if 
 nd_start=1+(start_hour/delta_t)
-if (nobs_start .lt. no_dt) then
-  write(*,*)
-  write(*,*) '!!!===WARNING: There is (are) only',nobs_start,'value(s) for the first simulation day'
-  write(*,*) 'rather than ',no_dt, 'values. Daily averaging scripts will exclude the first' 
-  write(*,*) 'day in the daily temperature output. ===!!!'
-  write(*,*)
-end if
-if (nobs_end .lt. no_dt) then
-  write(*,*)
-  write(*,*) '!!!===WARNING: There is (are) only',nobs_end,'value(s) for the last simulation day'
-  write(*,*) 'rather than ',no_dt, 'values. Daily averaging scripts will exclude the last'
-  write(*,*) 'day in the daily temperature output. ===!!!'
-  write(*,*)
-end if
-!
-
 !
 ! Julian date of start and end of forcing records
 !
 end_jul=Julian(end_yr,end_mon,end_day)
-no_days=end_jul - start_jul
+!
+! Total number of data points in each file
+!
+nobs=ndpnt*(end_jul - start_jul)
 !
 write(*,*) 'Julian',start_jul,end_jul
 !
-!
 write(*,*) 'no_cycles ',no_days
+!
 write(30,'(2(i4.4,i2.2,i2.2,a1,i2.2,1x),2i4)')          &
      start_yr,start_mon,start_day,colon,start_hour          &
     ,end_yr,end_mon,end_day,colon,end_hour                  &
@@ -177,31 +163,27 @@ do nf=2,7
 end do!
 ! Read the forcings from the DHSVM file
 !
-do nc=1,no_days
+do nc=1,nobs
 !
-! Read the streamflow from the DHSVM file
-!
-  read(25,*) time_stamp,(in_flow(n),n=1,no_seg)
-  read(26,*) time_stamp,(out_flow(n),n=1,no_seg)
-  do n=1,no_seg
-    ! Convert the unit from cubic meter per sec to cubic feet per sec
-    in_flow(n) = in_flow(n) * 35.315;
-    out_flow(n) = out_flow(n) * 35.315;
-    if(in_flow(n) .lt. 0.01 .and.out_flow(n).lt. 0.01) then 
-      in_flow(n)  = 0.01
-      out_flow(n) = in_flow(n)
-    end if
-    if (in_flow(n) .lt. 0.01 .and. out_flow(n) .ge. 0.01) then
-      in_flow(n) = 0.01
-    end if
-  end do
   forcing = 0.0
+!
   do nvg = 1,no_avg
     nfile=19
-    do nf=1,5
+     do nf=1,5
       nfile=nfile+1
       read(nfile,*) time_stamp,(DHSVM_out(nf,n),n=1,no_seg)
       if (nf .eq. 1) write(35,*) time_stamp
+      do n=1,no_seg
+        forcing(nf,n)=forcing(nf,n)+c_fctr(nf)*DHSVM_out(nf,n)/dt_steps
+      end do
+    end do
+    do nf=6,7
+      nfile=nfile+1
+      read(nfile,*) time_stamp,(DHSVM_out(nf,n),n=1,no_seg)
+!
+! Minimum flow is 1.0 (m**3/sec) 
+!
+      if (DHSVM_out(nf,n) .lt. 1.0) DHSVM_out(nf,n) = 1.0
       do n=1,no_seg
         forcing(nf,n)=forcing(nf,n)+c_fctr(nf)*DHSVM_out(nf,n)/dt_steps
       end do
@@ -213,8 +195,7 @@ do nc=1,no_days
   do n=1,no_seg
     nf=seg_no(n)
     nn=seg_net(nf)
-    write(30,*) n,nn,press,(forcing(nf,nn),nf=1,5)                  &
-               ,in_flow(nn),out_flow(nn)
+    write(30,*) n,nn,press,(forcing(nf,nn),nf=1,7)
   end do
 end do
 end Program Create_File

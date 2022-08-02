@@ -125,9 +125,6 @@ c
       read(30,*) start_time,end_time,nwpd,nd_start
       write(*,*) start_time,'  ',end_time,nwpd,nd_start
 c
-c Hardwire nwpd for daily-averaged input - JRY 5/5/2022
-C
-      nwpd = 1
 c Simulation starts with time = 0.0, but the first output is at time t + dt (3.0),
 c generally for DHSVM simulations. So update "nd_start"
 c
@@ -189,7 +186,7 @@ c
 c Added logical variable switch for deactivating SWE in individual 
 c headwaters - JRY 05/02/2022
 c                         
-     &             ,head_SWE(nreach)                
+c     &             ,head_SWE(nreach)                
 c
 c     If this is reach that is tributary to cell TRIB_CELL, give it the
 c     pointer TRIB(TRIB_CELL) the index of this reach for further use.
@@ -272,25 +269,35 @@ c
       SUBROUTINE SYSTMM
 c
       real swe_min,smelt,T_melt
+      real xn_avg
       real*4 xa(4),ta(4),T_head(1000),T_smth(1000)
      *      ,dt_part(500,250),x_part(1000)
       real*4 t1(250),t2(250),x1(250),x2(250)
       real*8 day_fract,hr_fract,sim_incr,year
+c
+      integer ishift,nn_avg
+c
       integer no_dt(1000),nstrt_elm(1000)
      .     ,ndltp(4),nterp(4),nptest(4),ndmo(12,2)
 c 
       logical DONE,DONE_PART,pp_T
 
       INCLUDE 'RBM.fi'
+      data xn_avg /24.0/,nn_avg/24.0/
+      data ishift /-1/
       data ndltp/-2,-1,-1,-2/,nterp/4,3,2,3/
       data lat/47.6/,pi/3.14159/,rfac/304.8/
       data ndmo/0,31,59,90,120,151,181,212,243,273,304,334
      &         ,0,31,60,91,121,152,182,213,244,274,305,335/
 c
 c
+c Temporary change to test 24-hour average
+      Head_SWE = .TRUE.
+c
       hour_inc=1./nwpd
       write(*,*) 'Initial water temperature, and melt temperature'
       read(*,*) T_init,T_melt
+c
       do nr=1,nreach
          T_head(nr)=T_init
          T_smth(nr)=T_init
@@ -384,6 +391,7 @@ c
                do nc=1,no_cells(nr)
                  l_seg=l_seg+1
                  read(30,*,end=900) l1,jjdmm
+c                 read(30,*,end=900) l1
      &                      ,press(l_seg),dbt(l_seg)
      &                      ,qna(l_seg),qns(l_seg),ea(l_seg),wind(l_seg)
      &                      ,qin(l_seg),qout(l_seg)
@@ -432,10 +440,10 @@ c
                do nr=1,nreach
 c
                  nc_head=segment_cell(nr,1)
+c         
                  T_smth(nr)=b_smooth*T_smth(nr)+a_smooth*dbt(nc_head)
-                 T_smth(nr) = dbt(nc_head)     
                  T_head(nr)=gmu(nr)
-     &           +(alf_Mu(nr)/(1.+exp(gmma(nr)*(beta(nr)-T_smth(nr))))) 
+     &           +(alf_Mu(nr)/(1.+exp(gmma(nr)*(beta(nr)-T_smooth)))) 
                  temp(nr,0,n1)=T_head(nr)
                  temp(nr,-1,n1)=T_head(nr)
                  temp(nr,-2,n1)=T_head(nr)
@@ -447,13 +455,13 @@ c Snowmelt influence
 c
                  Tmohseni = T_head(nr)
 c
-                 if (head_SWE(nr)) then
-                   if(smelt .gt. swe_min) then
-                     T_head(nr) = T_melt
-                   else
+c                 if (head_SWE(nr)) then
+c                   if(smelt .gt. swe_min) then!
+C                     T_head(nr) = T_melt
+C                   else
                      T_head(nr) = Tmohseni
-                   end if
-                 end if
+C                   end if
+C                 end if
 c                  
 c     First do the reverse particle tracking
 c
