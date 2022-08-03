@@ -116,9 +116,11 @@ read(*,*) hr_avg
 no_avg = hr_avg/no_dt
 dt_steps = no_avg
 !
-! Number of data points in a day
-!
+! Number of daily values in a day in DHSVM file
 ndpnt = 24/no_dt
+!
+! Number of daily values written to the forcing file
+nforce = 24/hr_avg
 !
 ! Determine number of time steps per day
 write(*,*) 'no_dt,hr_avg,no_avg ',no_dt,hr_avg,no_avg,dt_steps
