@@ -144,7 +144,7 @@ write(*,*) 'no_cycles ',no_days
 write(30,'(2(i4.4,i2.2,i2.2,a1,i2.2,1x),2i4)')          &
      start_yr,start_mon,start_day,colon,start_hour          &
     ,end_yr,end_mon,end_day,colon,end_hour                  &
-    ,no_dt,nd_start
+    ,nforce,nd_start
 !
 ! Read segment mapping
 !
